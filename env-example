@@ -1,3 +1,5 @@
+SECRET_KEY=7I1b2PTmftnzw81cefp8mXd+m2Y6WNSNvqOCUClOmnw=
+
 # database
 MYSQL_DATABASE=baber_booking
 MYSQL_USER=root
