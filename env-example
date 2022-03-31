@@ -1,0 +1,10 @@
+# database
+MYSQL_DATABASE=baber_booking
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3309
+MEDIA_FOLDER=media
+
+#email
+EMAIL_HOST="ductai26998+9@gmail.com"
