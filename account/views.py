@@ -88,8 +88,20 @@ class SalonViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         search_query = request.query_params.get("q", "")
+        sort_query = request.query_params.get("sort", "")
         queryset = models.Salon.objects.filter(
             salon_name__icontains=search_query)
+
+        if sort_query:
+            try:
+                if sort_query.startswith("-"):
+                    models.Salon._meta.get_field(sort_query[1:])
+                else:
+                    models.Salon._meta.get_field(sort_query)
+                queryset = queryset.order_by(sort_query)
+
+            except:
+                pass
         self.queryset = queryset
         return super().list(request)
 
