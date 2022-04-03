@@ -6,15 +6,22 @@ from . import Gender
 
 
 class Address(models.Model):
-    alias = models.CharField(max_length=128, blank=True, null=True)
+    alias = models.CharField(max_length=128, blank=True,
+                             null=True, help_text="Bí danh. Có thể là tên,...")
     full_name = models.CharField(max_length=128)
     phone_number = models.CharField(max_length=15, unique=True)
-    address = models.CharField(max_length=1024, blank=True, null=True)
-    province = models.CharField(max_length=128)
-    district = models.CharField(max_length=128)
-    ward = models.CharField(max_length=128, blank=True, null=True)
-    hamlet = models.CharField(max_length=128, blank=True, null=True)
-    street = models.CharField(max_length=256, blank=True, null=True)
+    address = models.CharField(
+        max_length=1024, blank=True, null=True, help_text="Địa chỉ cụ thể")
+    province = models.CharField(max_length=128, help_text="Tỉnh")
+    district = models.CharField(max_length=128, help_text="Quận/huyện")
+    ward = models.CharField(max_length=128, blank=True,
+                            null=True, help_text="Phường/xã")
+    hamlet = models.CharField(
+        max_length=128, blank=True, null=True, help_text="Thôn/xóm/ấp")
+    street = models.CharField(
+        max_length=256, blank=True, null=True, help_text="Đường")
+    latitude = models.FloatField(blank=True, null=True, help_text="Vĩ độ")
+    longitude = models.FloatField(blank=True, null=True, help_text="Kinh độ")
 
 
 class UserManager(BaseUserManager):

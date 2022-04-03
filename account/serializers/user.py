@@ -1,4 +1,5 @@
 from account import models
+from account.email import send_otp_to_email
 from rest_framework import serializers
 
 
@@ -39,4 +40,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "username",
             "is_verified",
             "otp",
+            "password",
         ]
+
+    def save(self, **kwargs):
+        super().save(**kwargs)
+
+        password = self.validated_data['password']
+        instance = self.instance
+        instance.set_password(password)
+        instance.save()
+        email = self.validated_data['email']
+        send_otp_to_email(instance, email)

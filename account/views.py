@@ -1,36 +1,33 @@
-from account.email import send_otp_to_email
+from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db import transaction
 
 from . import models
 from .serializers import (AddressSerializer, SalonSerializer,
-                          UserRegisterSerializer, UserSerializer, VerifyAccountSerializer)
+                          UserRegisterSerializer, UserSerializer,
+                          VerifyAccountSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = models.User.objects.filter()
     serializer_class = UserSerializer
 
-    # def create(self, request):
-    #     response = {'message': 'Create function is not offered in this path.'}
-    #     return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-    # @action(detail=True, methods=['post'])
-    # def register(self, request, *args, **kwargs):
+    def create(self, request):
+        response = {'message': 'Create function is not offered in this path.'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RegisterUserAPI(APIView):
+class UserRegister(APIView):
     @transaction.atomic
     def post(self, request):
         try:
             data = request.data
             serializer = UserRegisterSerializer(data=data)
             if serializer.is_valid():
+                serializer.validated_data
                 serializer.save()
-                send_otp_to_email(serializer.data["email"])
                 return Response({
                     "status": 200,
                     "message": "Registration successfully, check email to get otp",
@@ -44,7 +41,8 @@ class RegisterUserAPI(APIView):
         except Exception as e:
             print(e)
 
-class VerifyOTPAPI(APIView):
+
+class UserVerifyOTP(APIView):
     @transaction.atomic
     def post(self, request):
         try:
@@ -54,7 +52,7 @@ class VerifyOTPAPI(APIView):
             if serializer.is_valid():
                 email = serializer.data['email']
                 otp = serializer.data['otp']
-                user  = models.User.objects.get(email=email)
+                user = models.User.objects.get(email=email)
                 if not user:
                     return Response({
                         "status": 400,
@@ -83,11 +81,20 @@ class VerifyOTPAPI(APIView):
         except Exception as e:
             print(e)
 
+
 class SalonViewSet(viewsets.ModelViewSet):
     queryset = models.Salon.objects.filter()
     serializer_class = SalonSerializer
 
-class RegisterSalonAPI(APIView):
+    def list(self, request):
+        search_query = request.query_params.get("q", "")
+        queryset = models.Salon.objects.filter(
+            salon_name__icontains=search_query)
+        self.queryset = queryset
+        return super().list(request)
+
+
+class SalonRegister(APIView):
     @transaction.atomic
     def post(self, request):
         try:
@@ -95,7 +102,6 @@ class RegisterSalonAPI(APIView):
             serializer = UserRegisterSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                send_otp_to_email(serializer.data["email"])
                 return Response({
                     "status": 200,
                     "message": "Registration successfully, check email to get otp",
@@ -109,9 +115,11 @@ class RegisterSalonAPI(APIView):
         except Exception as e:
             print(e)
 
+
 class AddressViewSet(viewsets.ModelViewSet):
     queryset = models.Address.objects.all()
     serializer_class = AddressSerializer
+
 
 class AddressCreate(APIView):
     @transaction.atomic

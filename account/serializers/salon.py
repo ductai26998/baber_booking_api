@@ -19,4 +19,5 @@ class SalonSerializer(serializers.ModelSerializer):
             "salon_name",
             "total_completed_booking",
             "vote_rate",
+            "username",
         ]

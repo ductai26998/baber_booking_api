@@ -4,6 +4,9 @@
 ```sh
 virtualenv env
 ```
+```sh
+source env/bin/activate
+```
 ### Other Operation system: tự tìm hiểu
 
 ## Install requirements
