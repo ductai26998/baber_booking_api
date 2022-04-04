@@ -33,7 +33,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "first_name",
             "gender",
             "is_active",
-            "is_verified",
             "last_name",
             "phone_number",
             "total_completed_booking",

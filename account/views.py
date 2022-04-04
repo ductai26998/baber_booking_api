@@ -1,3 +1,6 @@
+from core import ResponseStatusCode
+from django.contrib.auth import login
+from django.contrib.auth.hashers import check_password
 from django.db import transaction
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -5,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import models
-from .serializers import (AddressSerializer, SalonSerializer,
-                          UserRegisterSerializer, UserSerializer,
-                          VerifyAccountSerializer)
+from .serializers import (AddressSerializer, SalonRegisterSerializer,
+                          SalonSerializer, UserRegisterSerializer,
+                          UserSerializer, VerifyAccountSerializer)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -16,7 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         response = {'message': 'Create function is not offered in this path.'}
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        return Response(response, status=status.HTTP_ResponseStatusCode.ERROR_BAD_REQUEST)
 
 
 class UserRegister(APIView):
@@ -29,12 +32,12 @@ class UserRegister(APIView):
                 serializer.validated_data
                 serializer.save()
                 return Response({
-                    "status": 200,
+                    "status": ResponseStatusCode.SUCCESS,
                     "message": "Registration successfully, check email to get otp",
                     "data": serializer.data,
                 })
             return Response({
-                "status": 400,
+                "status": ResponseStatusCode.ERROR,
                 "message": "Register error",
                 "data": serializer.errors,
             })
@@ -55,13 +58,13 @@ class UserVerifyOTP(APIView):
                 user = models.User.objects.get(email=email)
                 if not user:
                     return Response({
-                        "status": 400,
+                        "status": ResponseStatusCode.ERROR,
                         "message": "User is not exist",
                         "data": "invalid email",
                     })
                 if user.otp != otp:
                     return Response({
-                        "status": 400,
+                        "status": ResponseStatusCode.ERROR,
                         "message": "OTP wrong",
                         "data": "otp wrong",
                     })
@@ -69,17 +72,45 @@ class UserVerifyOTP(APIView):
                 user.save()
 
                 return Response({
-                    "status": 200,
+                    "status": ResponseStatusCode.SUCCESS,
                     "message": "Verification successfully",
                     "data": serializer.data,
                 })
             return Response({
-                "status": 400,
+                "status": ResponseStatusCode.ERROR,
                 "message": "Error verify",
                 "data": serializer.errors,
             })
         except Exception as e:
             print(e)
+
+
+class UserLoginWithEmailOrUsername(APIView):
+    def post(self, request):
+        mixin_id = request.data.get("mixin_id")
+        password = request.data.get("password")
+
+        user = models.User.objects.filter(username=mixin_id).first()
+        if not user:
+            user = models.User.objects.filter(email=mixin_id).first()
+        if not user:
+            return Response({
+                "status": ResponseStatusCode.ERROR,
+                "message": "Email or username is not exist",
+            })
+
+        is_true_password = check_password(password, user.password)
+        if not is_true_password:
+            return Response({
+                "status": ResponseStatusCode.ERROR,
+                "message": "Password is wrong",
+            })
+
+        login(request, user)
+        return Response({
+            "status": ResponseStatusCode.SUCCESS,
+            "message": "Login successfully"
+        })
 
 
 class SalonViewSet(viewsets.ModelViewSet):
@@ -111,21 +142,90 @@ class SalonRegister(APIView):
     def post(self, request):
         try:
             data = request.data
-            serializer = UserRegisterSerializer(data=data)
+            serializer = SalonRegisterSerializer(data=data)
             if serializer.is_valid():
+                serializer.validated_data
                 serializer.save()
                 return Response({
-                    "status": 200,
+                    "status": ResponseStatusCode.SUCCESS,
                     "message": "Registration successfully, check email to get otp",
                     "data": serializer.data,
                 })
             return Response({
-                "status": 400,
+                "status": ResponseStatusCode.ERROR,
                 "message": "Register error",
                 "data": serializer.errors,
             })
         except Exception as e:
             print(e)
+
+
+class SalonVerifyOTP(APIView):
+    @transaction.atomic
+    def post(self, request):
+        try:
+            data = request.data
+            serializer = VerifyAccountSerializer(data=data)
+
+            if serializer.is_valid():
+                email = serializer.data['email']
+                otp = serializer.data['otp']
+                salon = models.Salon.objects.get(email=email)
+                if not salon:
+                    return Response({
+                        "status": ResponseStatusCode.ERROR,
+                        "message": "Salon is not exist",
+                        "data": "invalid email",
+                    })
+                if salon.otp != otp:
+                    return Response({
+                        "status": ResponseStatusCode.ERROR,
+                        "message": "OTP wrong",
+                        "data": "otp wrong",
+                    })
+                salon.is_verified = True
+                salon.save()
+
+                return Response({
+                    "status": ResponseStatusCode.SUCCESS,
+                    "message": "Verification successfully",
+                    "data": serializer.data,
+                })
+            return Response({
+                "status": ResponseStatusCode.ERROR,
+                "message": "Error verify",
+                "data": serializer.errors,
+            })
+        except Exception as e:
+            print(e)
+
+
+class SalonLoginWithEmailOrUsername(APIView):
+    def post(self, request):
+        mixin_id = request.data.get("mixin_id")
+        password = request.data.get("password")
+
+        salon = models.Salon.objects.filter(username=mixin_id).first()
+        if not salon:
+            salon = models.Salon.objects.filter(email=mixin_id).first()
+        if not salon:
+            return Response({
+                "status": ResponseStatusCode.ERROR,
+                "message": "Email or username is not exist",
+            })
+
+        is_true_password = check_password(password, salon.password)
+        if not is_true_password:
+            return Response({
+                "status": ResponseStatusCode.ERROR,
+                "message": "Password is wrong",
+            })
+
+        login(request, salon)
+        return Response({
+            "status": ResponseStatusCode.SUCCESS,
+            "message": "Login successfully"
+        })
 
 
 class AddressViewSet(viewsets.ModelViewSet):
@@ -142,12 +242,12 @@ class AddressCreate(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response({
-                    "status": 200,
+                    "status": ResponseStatusCode.SUCCESS,
                     "message": "Create address success",
                     "data": serializer.data,
                 })
             return Response({
-                "status": 400,
+                "status": ResponseStatusCode.ERROR,
                 "message": "Create address error",
                 "data": serializer.errors,
             })

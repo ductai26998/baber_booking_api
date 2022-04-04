@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .address import AddressSerializer
-from .salon import SalonSerializer
+from .salon import SalonRegisterSerializer, SalonSerializer
 from .user import UserRegisterSerializer, UserSerializer
 
 
