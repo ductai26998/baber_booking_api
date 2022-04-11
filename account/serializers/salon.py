@@ -9,7 +9,6 @@ class SalonSerializer(serializers.ModelSerializer):
         model = models.Salon
         fields = [
             "avatar",
-            "addresses",
             "background_image",
             "default_address",
             "email",

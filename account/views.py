@@ -107,9 +107,11 @@ class UserLoginWithEmailOrUsername(APIView):
             })
 
         login(request, user)
+        serializer = UserSerializer()
         return Response({
             "status": ResponseStatusCode.SUCCESS,
-            "message": "Login successfully"
+            "message": "Login successfully",
+            "data": serializer.data,
         })
 
 
@@ -222,9 +224,11 @@ class SalonLoginWithEmailOrUsername(APIView):
             })
 
         login(request, salon)
+        serializer = SalonSerializer(salon)
         return Response({
             "status": ResponseStatusCode.SUCCESS,
-            "message": "Login successfully"
+            "message": "Login successfully",
+            "data": serializer.data,
         })
 
 
