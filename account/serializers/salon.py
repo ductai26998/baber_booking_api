@@ -10,7 +10,7 @@ class SalonSerializer(serializers.ModelSerializer):
         fields = [
             "avatar",
             "background_image",
-            "default_address",
+            "address",
             "email",
             "is_active",
             "is_closed",
@@ -28,7 +28,7 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Salon
         fields = [
-            "default_address",
+            "address",
             "avatar",
             "email",
             "salon_name",

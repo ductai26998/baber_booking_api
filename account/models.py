@@ -1,6 +1,7 @@
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+
+from base.models import TimeStampedModel
 
 from . import Gender
 
@@ -28,16 +29,16 @@ class UserManager(BaseUserManager):
     pass
 
 
-class BaseUser(AbstractUser):
+class BaseUser(AbstractUser, TimeStampedModel):
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     avatar = models.CharField(max_length=256, null=True, blank=True)
     phone_number = models.CharField(max_length=15, unique=True)
     is_active = models.BooleanField(default=True)
     total_completed_booking = models.PositiveIntegerField(default=0)
+    is_salon = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
 
@@ -52,11 +53,8 @@ class User(BaseUser):
 
 
 class Salon(BaseUser):
-    default_address = models.ForeignKey(
+    address = models.ForeignKey(
         Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL)
-    addresses = models.ManyToManyField(
-        Address, blank=True, related_name="user_addresses"
-    )
     salon_name = models.CharField(max_length=255, unique=True)
     background_image = models.CharField(max_length=256, null=True, blank=True)
     vote_rate = models.FloatField(blank=True, null=True)
