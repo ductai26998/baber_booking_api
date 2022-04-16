@@ -20,10 +20,11 @@ class SalonSerializer(serializers.ModelSerializer):
             "total_completed_booking",
             "vote_rate",
             "username",
+            "is_salon",
         ]
 
 
-class SalonRegisterSerializer(serializers.ModelSerializer):
+class SalonRegisterInputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Salon
@@ -34,8 +35,6 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
             "salon_name",
             "phone_number",
             "username",
-            "is_verified",
-            "otp",
             "password",
         ]
 
@@ -48,3 +47,21 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
         instance.save()
         email = self.validated_data['email']
         send_otp_to_email(instance, email)
+
+
+class SalonRegisterSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Salon
+        fields = [
+            "id",
+            "address",
+            "avatar",
+            "email",
+            "salon_name",
+            "phone_number",
+            "username",
+            "is_verified",
+            "otp",
+            "password",
+        ]

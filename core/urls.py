@@ -13,9 +13,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from account.views import (SalonRegister,
-                           SalonVerifyOTP, LoginWithEmailOrUsername,
-                           UserRegister, UserVerifyOTP)
+from account.views import (SalonRegister, LoginWithEmailOrUsername,
+                           UserRegister, VerifyOTP)
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.urls import path
@@ -29,8 +28,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     url(r"account/", include('account.urls')),
     url('register-user', UserRegister.as_view(), name='register-user'),
-    url('verify-user', UserVerifyOTP.as_view(), name='verify-user'),
+    url('verify-user', VerifyOTP.as_view(), name='verify-user'),
     url('register-salon', SalonRegister.as_view(), name='register-salon'),
-    url('verify-salon', SalonVerifyOTP.as_view(), name='verify-salon'),
     url('login-user', LoginWithEmailOrUsername.as_view(), name='login-user'),
 ]

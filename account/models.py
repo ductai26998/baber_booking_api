@@ -1,7 +1,8 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.db import models
+from typing import Any
 
 from base.models import TimeStampedModel
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.db import models
 
 from . import Gender
 
@@ -29,6 +30,18 @@ class UserManager(BaseUserManager):
     pass
 
 
+class UserQueryset(models.QuerySet):
+    def filter(self: models.QuerySet, *args: Any, **kwargs: Any) -> models.QuerySet:
+        # if "type" is not in kwargs, default: hide orders with type RETURN
+        if all(key.startswith("is_active") is False for key in kwargs.keys()):
+            kwargs["is_active"] = True
+        return super().filter(*args, **kwargs)
+
+    def all(self) -> models.QuerySet:
+        # Hidden type: RETURN
+        return self.filter()
+
+
 class BaseUser(AbstractUser, TimeStampedModel):
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
@@ -40,6 +53,7 @@ class BaseUser(AbstractUser, TimeStampedModel):
     total_completed_booking = models.PositiveIntegerField(default=0)
     is_salon = models.BooleanField(default=False)
 
+    objects = UserQueryset.as_manager()
     USERNAME_FIELD = 'username'
 
 
