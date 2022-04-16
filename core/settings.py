@@ -107,11 +107,11 @@ SIMPLE_JWT = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE'),
-        'USER': os.getenv('MYSQL_USER'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-        'HOST': os.getenv('MYSQL_HOST'),
-        'PORT': os.getenv('MYSQL_PORT'),
+        'NAME': os.getenv('MYSQL_DATABASE', 'yhwq10yi2c5mt222'),
+        'USER': os.getenv('MYSQL_USER', 'o58umxvy2m4l62hn'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'upzp3lu7m7mq6xtj'),
+        'HOST': os.getenv('MYSQL_HOST', 'pxukqohrckdfo4ty.cbetxkdyhwsb.us-east-1.rds.amazonaws.com'),
+        'PORT': os.getenv('MYSQL_PORT', '3306'),
     }
 }
 
