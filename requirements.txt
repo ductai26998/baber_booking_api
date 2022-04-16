@@ -7,12 +7,14 @@ django-filter==21.1
 django-on-heroku==1.1.2
 django-versatileimagefield==2.0
 djangorestframework==3.13.1
+djangorestframework-simplejwt==5.1.0
 importlib-metadata==4.11.3
 Markdown==3.3.6
 mysqlclient==2.1.0
 Pillow==9.0.1
 psycopg2-binary==2.9.3
 pycodestyle==2.8.0
+PyJWT==2.3.0
 PyMySQL==1.0.2
 python-dotenv==0.20.0
 python-magic==0.4.25
