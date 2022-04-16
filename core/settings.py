@@ -15,6 +15,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import django_on_heroku
+from django_prices.utils.formatting import get_currency_fraction
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'account',
+    'service',
 ]
 
 MIDDLEWARE = [
@@ -168,3 +170,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
+
+
+DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "VND")
+DEFAULT_DECIMAL_PLACES = get_currency_fraction(DEFAULT_CURRENCY)
+DEFAULT_CURRENCY_CODE_LENGTH = 3
+DEFAULT_MAX_DIGITS = 12
