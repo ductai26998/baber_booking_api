@@ -34,13 +34,13 @@ class UserViewSet(BaseViewSet):
         response = {'message': 'Create function is not offered in this path.'}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         if str(request.user.id) != pk:
             return Response({
                 "status": status.HTTP_400_BAD_REQUEST,
                 "message": "Permission denied",
             })
-        super().update(request)
+        return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
         try:
@@ -216,13 +216,13 @@ class SalonViewSet(BaseViewSet):
         response = {'message': 'Create function is not offered in this path.'}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         if str(request.user.id) != pk:
             return Response({
                 "status": status.HTTP_400_BAD_REQUEST,
                 "message": "Permission denied",
             })
-        super().update(request)
+        return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
         try:
