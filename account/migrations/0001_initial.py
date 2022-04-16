@@ -70,7 +70,8 @@ class Migration(migrations.Migration):
                 ('vote_rate', models.FloatField(blank=True, null=True)),
                 ('is_closed', models.BooleanField(default=False)),
                 ('addresses', models.ManyToManyField(blank=True, related_name='user_addresses', to='account.Address')),
-                ('default_address', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='account.address')),
+                ('address', models.ForeignKey(blank=True, null=True,
+                 on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='account.address')),
             ],
             options={
                 'abstract': False,
