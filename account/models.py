@@ -1,4 +1,6 @@
-from django.conf import settings
+from typing import Any
+
+from base.models import TimeStampedModel
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
@@ -28,17 +30,30 @@ class UserManager(BaseUserManager):
     pass
 
 
-class BaseUser(AbstractUser):
+class UserQueryset(models.QuerySet):
+    def filter(self: models.QuerySet, *args: Any, **kwargs: Any) -> models.QuerySet:
+        # if "type" is not in kwargs, default: hide orders with type RETURN
+        if all(key.startswith("is_active") is False for key in kwargs.keys()):
+            kwargs["is_active"] = True
+        return super().filter(*args, **kwargs)
+
+    def all(self) -> models.QuerySet:
+        # Hidden type: RETURN
+        return self.filter()
+
+
+class BaseUser(AbstractUser, TimeStampedModel):
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
     avatar = models.CharField(max_length=256, null=True, blank=True)
     phone_number = models.CharField(max_length=15, unique=True)
     is_active = models.BooleanField(default=True)
     total_completed_booking = models.PositiveIntegerField(default=0)
+    is_salon = models.BooleanField(default=False)
 
+    objects = UserQueryset.as_manager()
     USERNAME_FIELD = 'username'
 
 
@@ -52,11 +67,8 @@ class User(BaseUser):
 
 
 class Salon(BaseUser):
-    default_address = models.ForeignKey(
+    address = models.ForeignKey(
         Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL)
-    addresses = models.ManyToManyField(
-        Address, blank=True, related_name="user_addresses"
-    )
     salon_name = models.CharField(max_length=255, unique=True)
     background_image = models.CharField(max_length=256, null=True, blank=True)
     vote_rate = models.FloatField(blank=True, null=True)
