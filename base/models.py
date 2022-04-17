@@ -1,7 +1,9 @@
+import uuid
+
 from django.db import models
 from django.db.models import Manager
 from django.utils import timezone
-import uuid
+from django_prices.models import MoneyField as BaseMoneyField
 
 
 class TimeStampedModel(models.Model):
@@ -11,3 +13,7 @@ class TimeStampedModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class MoneyField(BaseMoneyField):
+    serialize = False

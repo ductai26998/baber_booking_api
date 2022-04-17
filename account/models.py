@@ -7,7 +7,7 @@ from django.db import models
 from . import Gender
 
 
-class Address(models.Model):
+class Address(TimeStampedModel):
     alias = models.CharField(max_length=128, blank=True,
                              null=True, help_text="Bí danh. Có thể là tên,...")
     address = models.CharField(
@@ -71,6 +71,7 @@ class Salon(BaseUser):
     background_image = models.CharField(max_length=256, null=True, blank=True)
     vote_rate = models.FloatField(blank=True, null=True)
     is_closed = models.BooleanField(default=False)
+    description = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
         ordering = ('date_joined',)

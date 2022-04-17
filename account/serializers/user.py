@@ -8,6 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
         fields = [
+            "id",
             "address",
             "avatar",
             "email",

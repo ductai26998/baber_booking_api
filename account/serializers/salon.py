@@ -8,6 +8,7 @@ class SalonSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Salon
         fields = [
+            "id",
             "avatar",
             "background_image",
             "address",

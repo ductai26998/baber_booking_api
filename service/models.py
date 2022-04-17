@@ -4,7 +4,7 @@ from account import Gender
 from account.models import Salon
 from base.models import TimeStampedModel
 from django.db import models
-from django_prices.models import MoneyField
+from base.models import MoneyField
 from django.conf import settings
 
 
