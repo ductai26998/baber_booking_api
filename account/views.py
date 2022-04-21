@@ -246,17 +246,29 @@ class SalonRegister(APIView):
     def post(self, request):
         try:
             data = request.data
-            serializer = SalonRegisterInputSerializer(data=data)
-            if serializer.is_valid():
-                serializer.validated_data
-                serializer.save()
-                username = serializer.data["username"]
+            if not data.get("address"):
+                return Response({
+                    "status": status.HTTP_400_BAD_REQUEST,
+                    "message": "Address is required",
+                })
+            address_data = data.pop("address")
+            serialize_account = SalonRegisterInputSerializer(data=data)
+            serialize_address = AddressSerializer(data=address_data)
+            if serialize_account.is_valid() and serialize_address.is_valid():
+                serialize_account.validated_data
+                serialize_account.save()
+                username = serialize_account.data["username"]
                 account = models.Salon.objects.get(username=username)
                 account.is_salon = True
                 account.is_active = True
+
+                serialize_address.validated_data
+                serialize_address.save()
+                account.address = serialize_address
                 account.save()
                 token = RefreshToken.for_user(account)
                 response = SalonRegisterSerializer(account)
+
                 return Response({
                     "status": status.HTTP_200_OK,
                     "message": "Registration successfully, check email to get otp",
@@ -266,7 +278,7 @@ class SalonRegister(APIView):
             return Response({
                 "status": status.HTTP_400_BAD_REQUEST,
                 "message": "Register error",
-                "data": serializer.errors,
+                "data": serialize_account.errors,
             })
         except Exception as e:
             return Response({

@@ -30,7 +30,6 @@ class SalonRegisterInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Salon
         fields = [
-            "address",
             "avatar",
             "email",
             "salon_name",
@@ -56,7 +55,6 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
         model = models.Salon
         fields = [
             "id",
-            "address",
             "avatar",
             "email",
             "salon_name",
@@ -64,5 +62,5 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
             "username",
             "is_verified",
             "otp",
-            "password",
+            "address",
         ]
