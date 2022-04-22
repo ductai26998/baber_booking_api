@@ -51,14 +51,14 @@ class BaseUser(AbstractUser, TimeStampedModel):
     is_active = models.BooleanField(default=True)
     total_completed_booking = models.PositiveIntegerField(default=0)
     is_salon = models.BooleanField(default=False)
+    address = models.ForeignKey(
+        Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL)
 
     objects = UserQueryset.as_manager()
     USERNAME_FIELD = 'username'
 
 
 class User(BaseUser):
-    address = models.ForeignKey(
-        Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL)
     gender = models.CharField(max_length=6, choices=Gender.choices)
 
     class Meta:
@@ -66,8 +66,6 @@ class User(BaseUser):
 
 
 class Salon(BaseUser):
-    address = models.ForeignKey(
-        Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL)
     salon_name = models.CharField(max_length=255, unique=True)
     background_image = models.CharField(max_length=256, null=True, blank=True)
     vote_rate = models.FloatField(blank=True, null=True)

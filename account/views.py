@@ -263,8 +263,8 @@ class SalonRegister(APIView):
                 account.is_active = True
 
                 serialize_address.validated_data
-                serialize_address.save()
-                account.address = serialize_address
+                address = serialize_address.save()
+                account.address = address
                 account.save()
                 token = RefreshToken.for_user(account)
                 response = SalonRegisterSerializer(account)
