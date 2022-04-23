@@ -79,7 +79,9 @@ class BaseUser(AbstractUser, TimeStampedModel):
 
 
 class User(BaseUser):
-    gender = models.CharField(max_length=6, choices=Gender.choices)
+    gender = models.CharField(
+        max_length=6, choices=Gender.choices, blank=True, null=True
+    )
 
     class Meta:
         ordering = ("date_joined",)
