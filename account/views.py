@@ -112,14 +112,14 @@ class UserRegister(BaseAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Register user failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
 
 
@@ -179,14 +179,14 @@ class VerifyOTP(BaseAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.VERIFY_FAIL,
                     "message": "OTP verification failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
 
 
@@ -234,14 +234,14 @@ class LoginWithEmailOrUsername(APIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.VERIFY_FAIL,
                     "message": "Login failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
 
 
@@ -315,9 +315,10 @@ class SalonViewSet(BaseViewSet):
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Deactivation failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
 
 
@@ -369,14 +370,14 @@ class SalonRegister(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Register salon failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
 
 
@@ -412,12 +413,12 @@ class AddressCreate(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Create address failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
