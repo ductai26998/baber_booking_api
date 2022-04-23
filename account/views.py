@@ -342,8 +342,8 @@ class SalonRegister(APIView):
             if serialize_account.is_valid() and serialize_address.is_valid():
                 serialize_account.validated_data
                 serialize_account.save()
-                username = serialize_account.data["username"]
-                account = models.Salon.objects.get(username=username)
+                email = serialize_account.data["email"]
+                account = models.Salon.objects.get(email=email)
                 account.is_salon = True
                 account.is_active = True
 
