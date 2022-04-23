@@ -21,7 +21,10 @@ class SalonSerializer(serializers.ModelSerializer):
             "total_completed_booking",
             "vote_rate",
             "username",
+            "first_name",
+            "last_name",
             "is_salon",
+            "is_superuser",
         ]
 
 
@@ -35,6 +38,8 @@ class SalonRegisterInputSerializer(serializers.ModelSerializer):
             "salon_name",
             "phone_number",
             "username",
+            "first_name",
+            "last_name",
             "password",
         ]
 
@@ -61,6 +66,9 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
             "phone_number",
             "username",
             "is_verified",
-            "otp",
             "address",
+            "first_name",
+            "last_name",
+            "is_salon",
+            "is_superuser",
         ]

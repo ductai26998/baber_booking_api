@@ -21,6 +21,9 @@ class UserSerializer(serializers.ModelSerializer):
             "total_completed_booking",
             "username",
             "is_salon",
+            "is_superuser",
+            "first_name",
+            "last_name",
         ]
 
 
@@ -68,6 +71,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "total_completed_booking",
             "username",
             "is_verified",
-            "otp",
-            "password",
+            "is_salon",
+            "is_superuser",
+            "first_name",
+            "last_name",
         ]

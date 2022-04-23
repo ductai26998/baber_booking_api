@@ -43,9 +43,6 @@ class UserQueryset(models.QuerySet):
 
 
 class BaseUser(AbstractUser, TimeStampedModel):
-    username = models.CharField(
-        max_length=255, unique=True, blank=True, null=True)
-    email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
     avatar = models.CharField(max_length=256, null=True, blank=True)
