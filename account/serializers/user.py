@@ -25,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
         ]
+        depth = 2
 
 
 class UserRegisterInputSerializer(serializers.ModelSerializer):

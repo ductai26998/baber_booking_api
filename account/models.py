@@ -12,7 +12,7 @@ class Address(TimeStampedModel):
                              null=True, help_text="Bí danh. Có thể là tên,...")
     address = models.CharField(
         max_length=1024, blank=True, null=True, help_text="Địa chỉ cụ thể")
-    province = models.CharField(max_length=128, help_text="Tỉnh")
+    province = models.CharField(max_length=128, blank=True, null=True, help_text="Tỉnh")
     city = models.CharField(max_length=128, blank=True,
                             null=True, help_text="Thành phố")
     district = models.CharField(max_length=128, help_text="Quận/huyện")

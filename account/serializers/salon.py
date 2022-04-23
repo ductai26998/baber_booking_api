@@ -26,6 +26,7 @@ class SalonSerializer(serializers.ModelSerializer):
             "is_salon",
             "is_superuser",
         ]
+        depth = 2
 
 
 class SalonRegisterInputSerializer(serializers.ModelSerializer):
@@ -72,3 +73,4 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
             "is_salon",
             "is_superuser",
         ]
+        depth = 2
