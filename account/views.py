@@ -98,7 +98,7 @@ class UserRegister(BaseAPIView):
                 return Response(
                     {
                         "message": "Registration successfully, check email to get otp",
-                        "account": response.data,
+                        "data": response.data,
                         "access_token": str(token.access_token),
                     },
                     status=status.HTTP_200_OK,
@@ -167,7 +167,7 @@ class VerifyOTP(BaseAPIView):
                 return Response(
                     {
                         "message": "Verification successfully",
-                        "account": serializer.data,
+                        "data": serializer.data,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -230,7 +230,7 @@ class LoginWithEmailOrUsername(APIView):
             return Response(
                 {
                     "message": "Login successfully",
-                    "account": serializer.data,
+                    "data": serializer.data,
                     "access_token": str(token.access_token),
                 },
                 status=status.HTTP_200_OK,
@@ -357,7 +357,7 @@ class SalonRegister(APIView):
                 return Response(
                     {
                         "message": "Registration successfully, check email to get otp",
-                        "account": response.data,
+                        "data": response.data,
                         "access_token": str(token.access_token),
                     },
                     status=status.HTTP_200_OK,
@@ -402,7 +402,7 @@ class AddressCreate(APIView):
                 return Response(
                     {
                         "message": "Create address successfully",
-                        "account": serializer.data,
+                        "data": serializer.data,
                     },
                     status=status.HTTP_200_OK,
                 )
