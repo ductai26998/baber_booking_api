@@ -70,7 +70,7 @@ class UserRegister(BaseAPIView):
                 serializer.validated_data
                 serializer.save()
                 username = serializer.data["username"]
-                account = models.BaseUser.objects.get(username=username)
+                account = models.User.objects.get(username=username)
                 account.is_active = True
                 account.save()
                 token = RefreshToken.for_user(account)
@@ -87,6 +87,7 @@ class UserRegister(BaseAPIView):
                 "data": serializer.errors,
             })
         except Exception as e:
+            print(e)
             return Response({
                 "status": status.HTTP_400_BAD_REQUEST,
                 "errors": e,
