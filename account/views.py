@@ -7,20 +7,23 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from . import models
-from .serializers import (AddressSerializer, SalonRegisterInputSerializer,
-                          SalonRegisterSerializer, SalonSerializer,
-                          UserRegisterInputSerializer, UserRegisterSerializer,
-                          UserSerializer, VerifyAccountSerializer)
+from . import AccountErrorCode, models
+from .serializers import (
+    AddressSerializer,
+    SalonRegisterInputSerializer,
+    SalonRegisterSerializer,
+    SalonSerializer,
+    UserRegisterInputSerializer,
+    UserRegisterSerializer,
+    UserSerializer,
+    VerifyAccountSerializer,
+)
 
 
 class UserViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated]
 
-    serializer_map = {
-        "list": UserSerializer,
-        "retrieve": UserSerializer
-    }
+    serializer_map = {"list": UserSerializer, "retrieve": UserSerializer}
     permission_map = {
         "list": [IsAdminUser],
         "retrieve": [IsAuthenticated],
@@ -31,33 +34,50 @@ class UserViewSet(BaseViewSet):
     serializer_class = UserSerializer
 
     def create(self, request):
-        response = {'message': 'Create function is not offered in this path.'}
+        response = {
+            "code": AccountErrorCode.NOT_FOUND,
+            "message": "Create function is not offered in this path.",
+        }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
         if str(request.user.id) != pk:
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
+            response = {
+                "code": AccountErrorCode.PERMISSION_DENIED,
                 "message": "Permission denied",
-            })
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
         return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
         try:
             user = models.User.objects.get(pk=pk)
             if not user:
-                return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "User is inactive",
-            })
+                return Response(
+                    {
+                        "code": AccountErrorCode.INACTIVE,
+                        "message": "User is inactive",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             user.is_active = False
             user.save()
-            return Response({
-                    "status": status.HTTP_200_OK,
-                    "message": "User is deactivated",
-                })
+            return Response(
+                {
+                    "message": "User is deactivated successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             print(e)
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Deactivation failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class UserRegister(BaseAPIView):
@@ -75,23 +95,32 @@ class UserRegister(BaseAPIView):
                 account.save()
                 token = RefreshToken.for_user(account)
                 response = UserRegisterSerializer(account)
-                return Response({
-                    "status": status.HTTP_200_OK,
-                    "message": "Registration successfully, check email to get otp",
-                    "data": response.data,
-                    "access_token": str(token.access_token),
-                })
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "Register error",
-                "data": serializer.errors,
-            })
+                return Response(
+                    {
+                        "message": "Registration successfully, check email to get otp",
+                        "account": response.data,
+                        "access_token": str(token.access_token),
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Register user failed",
+                    "data": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             print(e)
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "errors": e,
-            })
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Register user failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class VerifyOTP(BaseAPIView):
@@ -102,44 +131,63 @@ class VerifyOTP(BaseAPIView):
         try:
             instance = super().get_instance(request)
             if instance.is_verified:
-                return Response({
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "message": "User is verified before",
-                })
+                return Response(
+                    {
+                        "code": AccountErrorCode.VERIFY_FAIL,
+                        "message": "User is verified before",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             data = request.data
             serializer = VerifyAccountSerializer(data=data)
 
             if serializer.is_valid():
-                email = serializer.data['email']
-                otp = serializer.data['otp']
+                email = serializer.data["email"]
+                otp = serializer.data["otp"]
                 if instance.email != email:
-                    return Response({
-                        "status": status.HTTP_400_BAD_REQUEST,
-                        "message": "Invalid email",
-                    })
+                    return Response(
+                        {
+                            "code": AccountErrorCode.INVALID,
+                            "message": "Invalid email",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 if instance.otp != otp:
-                    return Response({
-                        "status": status.HTTP_400_BAD_REQUEST,
-                        "message": "OTP wrong",
-                    })
+                    return Response(
+                        {
+                            "code": AccountErrorCode.INVALID,
+                            "message": "OTP wrong",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 instance.is_verified = True
                 instance.save()
 
-                return Response({
-                    "status": status.HTTP_200_OK,
-                    "message": "Verification successfully",
-                    "data": serializer.data,
-                })
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "Error verify",
-                "errors": serializer.errors,
-            })
+                return Response(
+                    {
+                        "message": "Verification successfully",
+                        "account": serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {
+                    "code": AccountErrorCode.VERIFY_FAIL,
+                    "message": "OTP verification failed",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "errors": e,
-            })
+            print(e)
+            return Response(
+                {
+                    "code": AccountErrorCode.VERIFY_FAIL,
+                    "message": "OTP verification failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class LoginWithEmailOrUsername(APIView):
@@ -150,20 +198,25 @@ class LoginWithEmailOrUsername(APIView):
 
             account = models.BaseUser.objects.filter(username=mixin_id).first()
             if not account:
-                account = models.BaseUser.objects.filter(
-                    email=mixin_id).first()
+                account = models.BaseUser.objects.filter(email=mixin_id).first()
             if not account:
-                return Response({
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "message": "Email or username is not exist",
-                })
+                return Response(
+                    {
+                        "code": AccountErrorCode.NOT_FOUND,
+                        "message": "Email or username is not exist",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             is_true_password = check_password(password, account.password)
             if not is_true_password:
-                return Response({
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "message": "Password is wrong",
-                })
+                return Response(
+                    {
+                        "code": AccountErrorCode.VERIFY_FAIL,
+                        "message": "Password is wrong",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             token = RefreshToken.for_user(account)
             if account.is_salon:
@@ -172,17 +225,24 @@ class LoginWithEmailOrUsername(APIView):
             else:
                 user = models.User.objects.get(id=account.id)
                 serializer = UserSerializer(user)
-            return Response({
-                "status": status.HTTP_200_OK,
-                "message": "Login successfully",
-                "data": serializer.data,
-                "access_token": str(token.access_token),
-            })
+            return Response(
+                {
+                    "message": "Login successfully",
+                    "account": serializer.data,
+                    "access_token": str(token.access_token),
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "errors": e,
-            })
+            print(e)
+            return Response(
+                {
+                    "code": AccountErrorCode.VERIFY_FAIL,
+                    "message": "Login failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class SalonViewSet(BaseViewSet):
@@ -197,8 +257,7 @@ class SalonViewSet(BaseViewSet):
     def list(self, request):
         search_query = request.query_params.get("q", "")
         sort_query = request.query_params.get("sort", "")
-        queryset = models.Salon.objects.filter(
-            salon_name__icontains=search_query)
+        queryset = models.Salon.objects.filter(salon_name__icontains=search_query)
 
         if sort_query:
             try:
@@ -214,33 +273,53 @@ class SalonViewSet(BaseViewSet):
         return super().list(request)
 
     def create(self, request):
-        response = {'message': 'Create function is not offered in this path.'}
+        response = {
+            "code": AccountErrorCode.NOT_FOUND,
+            "message": "Create function is not offered in this path.",
+        }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, pk=None):
         if str(request.user.id) != pk:
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "Permission denied",
-            })
+            return Response(
+                {
+                    "code": AccountErrorCode.PERMISSION_DENIED,
+                    "message": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
         try:
             user = models.User.objects.get(pk=pk)
             if not user:
-                return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "User is inactive",
-            })
+                return Response(
+                    {
+                        "code": AccountErrorCode.INACTIVE,
+                        "message": "User is inactive",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             user.is_active = False
             user.save()
-            return Response({
-                    "status": status.HTTP_200_OK,
+            return Response(
+                {
                     "message": "User is deactivated",
-                })
+                },
+                status=status.HTTP_200_OK,
+            )
         except Exception as e:
             print(e)
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Deactivation failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
 class SalonRegister(APIView):
     @transaction.atomic
@@ -248,10 +327,13 @@ class SalonRegister(APIView):
         try:
             data = request.data
             if not data.get("address"):
-                return Response({
-                    "status": status.HTTP_400_BAD_REQUEST,
-                    "message": "Address is required",
-                })
+                return Response(
+                    {
+                        "status": AccountErrorCode.REQUIRED,
+                        "message": "Address is required",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             address_data = data.pop("address")
             serialize_account = SalonRegisterInputSerializer(data=data)
             serialize_address = AddressSerializer(data=address_data)
@@ -270,23 +352,32 @@ class SalonRegister(APIView):
                 token = RefreshToken.for_user(account)
                 response = SalonRegisterSerializer(account)
 
-                return Response({
-                    "status": status.HTTP_200_OK,
-                    "message": "Registration successfully, check email to get otp",
-                    "data": response.data,
-                    "access_token": str(token.access_token),
-                })
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "Register error",
-                "data": serialize_account.errors,
-            })
+                return Response(
+                    {
+                        "message": "Registration successfully, check email to get otp",
+                        "account": response.data,
+                        "access_token": str(token.access_token),
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Register salon failed",
+                    "errors": serialize_account.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             print(e)
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "errors": e,
-            })
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Register salon failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class AddressViewSet(viewsets.ModelViewSet):
@@ -305,15 +396,28 @@ class AddressCreate(APIView):
             serializer = AddressSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                return Response({
-                    "status": status.HTTP_200_OK,
-                    "message": "Create address success",
-                    "data": serializer.data,
-                })
-            return Response({
-                "status": status.HTTP_400_BAD_REQUEST,
-                "message": "Create address error",
-                "data": serializer.errors,
-            })
+                return Response(
+                    {
+                        "message": "Create address successfully",
+                        "account": serializer.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Create address failed",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             print(e)
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "message": "Create address failed",
+                    "errors": e,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
