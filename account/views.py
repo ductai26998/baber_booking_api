@@ -69,14 +69,14 @@ class UserViewSet(BaseViewSet):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Deactivation failed",
-                    "errors": e,
+                    "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
             )
 
 
@@ -107,9 +107,10 @@ class UserRegister(BaseAPIView):
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Register user failed",
-                    "data": serializer.errors,
+                    "errors": serializer.error_messages,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=serializer.errors,
             )
         except Exception as e:
             return Response(
@@ -174,9 +175,10 @@ class VerifyOTP(BaseAPIView):
                 {
                     "code": AccountErrorCode.VERIFY_FAIL,
                     "message": "OTP verification failed",
-                    "errors": serializer.errors,
+                    "errors": serializer.error_messages,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=serializer.errors,
             )
         except Exception as e:
             return Response(
@@ -310,7 +312,6 @@ class SalonViewSet(BaseViewSet):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            print(e)
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
@@ -365,9 +366,10 @@ class SalonRegister(APIView):
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Register salon failed",
-                    "errors": serialize_account.errors,
+                    "errors": serialize_account.error_messages,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=serialize_account.errors,
             )
         except Exception as e:
             return Response(
@@ -408,9 +410,10 @@ class AddressCreate(APIView):
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "message": "Create address failed",
-                    "errors": serializer.errors,
+                    "errors": serializer.error_messages,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                exception=serializer.errors,
             )
         except Exception as e:
             return Response(
