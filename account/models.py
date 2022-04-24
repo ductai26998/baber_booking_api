@@ -10,26 +10,26 @@ from . import Gender
 
 
 class Address(TimeStampedModel):
-    alias = models.CharField(
-        max_length=128, blank=True, null=True, help_text="Bí danh. Có thể là tên,..."
-    )
     address = models.CharField(
         max_length=1024, blank=True, null=True, help_text="Địa chỉ cụ thể"
     )
-    province = models.CharField(max_length=128, blank=True, null=True, help_text="Tỉnh")
-    city = models.CharField(
-        max_length=128, blank=True, null=True, help_text="Thành phố"
+    province = models.CharField(
+        max_length=128, blank=True, null=True, help_text="Tỉnh/thành phố trực thuộc"
     )
-    district = models.CharField(max_length=128, help_text="Quận/huyện")
+    district = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        help_text="Quận/huyện/thành phố không trực thuộc",
+    )
     ward = models.CharField(
         max_length=128, blank=True, null=True, help_text="Phường/xã"
     )
     hamlet = models.CharField(
-        max_length=128, blank=True, null=True, help_text="Thôn/xóm/ấp"
+        max_length=128, blank=True, null=True, help_text="Thôn/xóm/ấp/đường"
     )
-    street = models.CharField(max_length=256, blank=True, null=True, help_text="Đường")
-    latitude = models.FloatField(blank=True, null=True, help_text="Vĩ độ")
-    longitude = models.FloatField(blank=True, null=True, help_text="Kinh độ")
+    lat = models.FloatField(blank=True, null=True, help_text="Vĩ độ")
+    lng = models.FloatField(blank=True, null=True, help_text="Kinh độ")
 
 
 class UserManager(BaseUserManager):
@@ -76,6 +76,9 @@ class BaseUser(AbstractUser, TimeStampedModel):
 
     objects = UserQueryset.as_manager()
     USERNAME_FIELD = "username"
+
+    class Meta:
+        ordering = ("date_joined",)
 
 
 class User(BaseUser):

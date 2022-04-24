@@ -335,18 +335,17 @@ class SalonRegister(APIView):
     def post(self, request):
         try:
             data = request.data
-            if not data.get("address"):
+            address_url = data.get("address_url")
+            if not address_url or address_url.strip() == "":
                 return Response(
                     {
-                        "status": AccountErrorCode.REQUIRED,
-                        "message": "Address is required",
+                        "code": AccountErrorCode.REQUIRED,
+                        "message": "Address url is required",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            address_data = data.pop("address")
             serialize_account = SalonRegisterInputSerializer(data=data)
-            serialize_address = AddressSerializer(data=address_data)
-            if serialize_account.is_valid() and serialize_address.is_valid():
+            if serialize_account.is_valid():
                 serialize_account.validated_data
                 serialize_account.save()
                 email = serialize_account.data["email"]
@@ -354,9 +353,20 @@ class SalonRegister(APIView):
                 account.is_salon = True
                 account.is_active = True
 
-                serialize_address.validated_data
-                address = serialize_address.save()
-                account.address = address
+                # create address
+                address = Address()
+                address.set_address_from_url(address_url)
+                account_address = models.Address.objects.create(
+                    address=address.address,
+                    province=address.province,
+                    district=address.district,
+                    ward=address.ward,
+                    hamlet=address.hamlet,
+                    lat=address.lat,
+                    lng=address.lng,
+                )
+
+                account.address = account_address
                 account.save()
                 token = RefreshToken.for_user(account)
                 response = SalonRegisterSerializer(account)
@@ -390,43 +400,94 @@ class SalonRegister(APIView):
             )
 
 
-class AddressViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = models.Address.objects.all()
-    serializer_class = AddressSerializer
+class Address:
+    @classmethod
+    def __init__(self, *args, **kwargs):
+        self.address = kwargs.get("address")
+        self.province = kwargs.get("province")
+        self.district = kwargs.get("district")
+        self.ward = kwargs.get("ward")
+        self.hamlet = kwargs.get("hamlet")
+        self.lat = kwargs.get("lat")
+        self.lng = kwargs.get("lng")
+
+    @classmethod
+    def set_address_from_url(self, url: str):
+        if not url:
+            return
+        url = url.replace("https://www.google.com/maps/place/", "")
+        types = url.split("/")
+        self.address = types[0].replace("+", " ")
+        sub_addresses = self.address.split(", ")
+        length_address = len(sub_addresses)
+        if length_address >= 2:
+            self.province = sub_addresses[-2]
+            if length_address >= 3:
+                self.district = sub_addresses[-3]
+                if length_address >= 4:
+                    self.ward = sub_addresses[-4]
+                    if length_address >= 5:
+                        self.hamlet = sub_addresses[-5]
+
+        location = types[1].replace("@", "").split(",")
+        self.lat = location[0]
+        self.lng = location[1]
 
 
-class AddressCreate(APIView):
+# class AddressViewSet(viewsets.ModelViewSet):
+#     permission_classes = [IsAuthenticated]
+#     queryset = models.Address.objects.all()
+#     serializer_class = AddressSerializer
+
+
+class AddressUpdate(APIView):
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
     def post(self, request):
         try:
+            account = request.user
             data = request.data
-            serializer = AddressSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
+            address_url = data.get("address_url")
+            if address_url.strip() == "":
                 return Response(
                     {
-                        "message": "Create address successfully",
-                        "data": serializer.data,
+                        "code": AccountErrorCode.REQUIRED,
+                        "message": "Address url is required",
                     },
-                    status=status.HTTP_200_OK,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
+            address = Address()
+            address.set_address_from_url(address_url)
+            current_address = account.address
+
+            current_address.address = address.address
+            current_address.province = address.province
+            current_address.district = address.district
+            current_address.ward = address.ward
+            current_address.hamlet = address.hamlet
+            current_address.lat = float(
+                address.lat,
+            )
+            current_address.lng = float(
+                address.lng,
+            )
+            current_address.save()
+
+            serializer = AddressSerializer(current_address)
             return Response(
                 {
-                    "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Create address failed",
-                    "errors": serializer._errors,
+                    "message": "Update address successfully",
+                    "data": serializer.data,
                 },
-                status=status.HTTP_400_BAD_REQUEST,
-                exception=serializer._errors,
+                status=status.HTTP_200_OK,
             )
+
         except Exception as e:
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Create address failed",
+                    "message": "Update address failed",
                     "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
