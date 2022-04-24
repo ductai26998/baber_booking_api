@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from account.serializers.user import UserUpdateSerializer
+
 from . import AccountErrorCode, models
 from .serializers import (
     AddressSerializer,
@@ -23,7 +25,11 @@ from .serializers import (
 class UserViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated]
 
-    serializer_map = {"list": UserSerializer, "retrieve": UserSerializer}
+    serializer_map = {
+        "list": UserSerializer,
+        "retrieve": UserSerializer,
+        "partial_update": UserUpdateSerializer,
+    }
     permission_map = {
         "list": [IsAdminUser],
         "retrieve": [IsAuthenticated],

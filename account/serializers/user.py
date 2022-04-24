@@ -11,11 +11,9 @@ class UserSerializer(serializers.ModelSerializer):
             "address",
             "avatar",
             "email",
-            "first_name",
             "gender",
             "is_active",
             "is_verified",
-            "last_name",
             "phone_number",
             "total_completed_booking",
             "username",
@@ -25,6 +23,21 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
         ]
         depth = 2
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = [
+            "avatar",
+            "first_name",
+            "last_name",
+            "gender",
+            "phone_number",
+            "first_name",
+            "last_name",
+            "username",
+        ]
 
 
 class UserRegisterInputSerializer(serializers.ModelSerializer):
@@ -54,10 +67,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "address",
             "avatar",
             "email",
-            "first_name",
             "gender",
             "is_active",
-            "last_name",
             "phone_number",
             "total_completed_booking",
             "username",
