@@ -11,7 +11,7 @@ from . import Gender
 
 class Address(TimeStampedModel):
     address = models.CharField(
-        max_length=1024, blank=True, null=True, help_text="Địa chỉ cụ thể"
+        max_length=512, blank=True, null=True, help_text="Địa chỉ cụ thể"
     )
     province = models.CharField(
         max_length=128, blank=True, null=True, help_text="Tỉnh/thành phố trực thuộc"
@@ -30,6 +30,12 @@ class Address(TimeStampedModel):
     )
     lat = models.FloatField(blank=True, null=True, help_text="Vĩ độ")
     lng = models.FloatField(blank=True, null=True, help_text="Kinh độ")
+    position_url = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True,
+        help_text="Url của vị trí trên google map",
+    )
 
 
 class UserManager(BaseUserManager):
