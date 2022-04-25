@@ -364,6 +364,7 @@ class SalonRegister(APIView):
                     hamlet=address.hamlet,
                     lat=address.lat,
                     lng=address.lng,
+                    position_url=address.position_url,
                 )
 
                 account.address = account_address
@@ -410,11 +411,13 @@ class Address:
         self.hamlet = kwargs.get("hamlet")
         self.lat = kwargs.get("lat")
         self.lng = kwargs.get("lng")
+        self.position_url = kwargs.get("position_url")
 
     @classmethod
     def set_address_from_url(self, url: str):
         if not url:
             return
+        self.position_url = url
         url = url.replace("https://www.google.com/maps/place/", "")
         types = url.split("/")
         self.address = types[0].replace("+", " ")
@@ -472,6 +475,7 @@ class AddressUpdate(APIView):
             current_address.lng = float(
                 address.lng,
             )
+            current_address.position_url = address.position_url
             current_address.save()
 
             serializer = AddressSerializer(current_address)

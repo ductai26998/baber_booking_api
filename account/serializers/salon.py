@@ -4,13 +4,13 @@ from rest_framework import serializers
 
 
 class SalonSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Salon
         fields = [
             "id",
             "avatar",
             "background_image",
+            "description",
             "address",
             "email",
             "is_active",
@@ -30,7 +30,6 @@ class SalonSerializer(serializers.ModelSerializer):
 
 
 class SalonRegisterInputSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Salon
         fields = [
@@ -47,16 +46,15 @@ class SalonRegisterInputSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         super().save(**kwargs)
 
-        password = self.validated_data['password']
+        password = self.validated_data["password"]
         instance = self.instance
         instance.set_password(password)
         instance.save()
-        email = self.validated_data['email']
+        email = self.validated_data["email"]
         send_otp_to_email(instance, email)
 
 
 class SalonRegisterSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Salon
         fields = [
