@@ -1,17 +1,20 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from . import views
+from .views import salon as salon_views
+from .views import user as user_views
 from service import views as service_views
 
 router = DefaultRouter()
 
-router.register("user", views.UserViewSet)
-router.register("salon", views.SalonViewSet)
-# router.register("address", views.AddressViewSet)
-router.register("salon-service", service_views.ServiceSalonViewSet)
+router.register("user", user_views.UserViewSet)
+router.register("salon", salon_views.SalonViewSet)
+
+router.register("salonService", service_views.ServiceSalonViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("salon-update-address", views.AddressUpdate.as_view()),
+    # apis for salon
+    path("salonAddress/", salon_views.AddressUpdate.as_view()),
+    # apis for user
 ]

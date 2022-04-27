@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 
 class ServiceInputSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Service
         fields = [
@@ -14,7 +13,6 @@ class ServiceInputSerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = models.Service
         fields = [

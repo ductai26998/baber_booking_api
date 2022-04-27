@@ -13,23 +13,28 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from account.views import (SalonRegister, LoginWithEmailOrUsername,
-                           UserRegister, VerifyOTP)
+# from account.views import (SalonRegister, LoginWithEmailOrUsername,
+#                            UserRegister, VerifyOTP)
+
+from account.views import LoginWithEmailOrUsername, VerifyOTP
+from account.views import salon as salon_views
+from account.views import user as user_views
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.urls import path
-from rest_framework_simplejwt.views import (TokenObtainPairView,
-                                            TokenRefreshView)
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
-    url('account/', include('account.urls')),
-    url('service/', include('service.urls')),
-    url('register-user', UserRegister.as_view(), name='register-user'),
-    url('verify-user', VerifyOTP.as_view(), name='verify-user'),
-    url('register-salon', SalonRegister.as_view(), name='register-salon'),
-    url('login-user', LoginWithEmailOrUsername.as_view(), name='login-user'),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("admin/", admin.site.urls),
+    path("api-auth/", include("rest_framework.urls")),
+    url("account/", include("account.urls")),
+    url("service/", include("service.urls")),
+    url("verifyOTP/", VerifyOTP.as_view(), name="verify_user"),
+    url("login/", LoginWithEmailOrUsername.as_view(), name="login"),
+    # apis for salon
+    url("registerSalon/", salon_views.SalonRegister.as_view(), name="register_salon"),
+    # apis for user
+    url("registerUser/", user_views.UserRegister.as_view(), name="register_user"),
 ]

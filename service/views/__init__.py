@@ -7,10 +7,8 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from service import models as service_models
-
-from . import ServiceErrorCode, models
-from .serializers import (
+from .. import ServiceErrorCode, models
+from ..serializers import (
     ServiceInputSerializer,
     ServiceSalonInputSerializer,
     ServiceSalonSerializer,
@@ -26,6 +24,62 @@ class ServiceViewSet(BaseViewSet):
     serializer_map = {
         "create": ServiceInputSerializer,
     }
+
+    def create(self, request, *args, **kwargs):
+        try:
+            account = request.user
+            data = request.data
+            price = data.pop("price")
+            name = data.get("name")
+            gender = data.get("gender")
+            service_exist = models.Service.objects.filter(
+                name__iexact=name, gender=gender
+            ).exists()
+            if service_exist:
+                return Response(
+                    {
+                        "code": ServiceErrorCode.EXISTED,
+                        "message": "Service existed",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # data["price"] = price
+            serializer = ServiceInputSerializer(data=data)
+            if serializer.is_valid():
+                service = serializer.save()
+                service_salon_object = models.ServiceSalon.objects.create(
+                    service=service,
+                    salon_id=account.id,
+                    price_amount=price.get("amount"),
+                    currency=price.get("currency"),
+                )
+                service_salon = ServiceSalonInputSerializer(service_salon_object)
+                return Response(
+                    {
+                        "message": "Success add a new service",
+                        "data": service_salon.data,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                {
+                    "code": ServiceErrorCode.PROCESSING_ERROR,
+                    "message": "Add new service failed",
+                    "errors": serializer._errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                exception=serializer._errors,
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "code": ServiceErrorCode.PROCESSING_ERROR,
+                    "message": "Add new service failed",
+                    "errors": e.args,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                exception=e,
+            )
 
     def partial_update(self, request, pk=None):
         response = {
@@ -67,28 +121,28 @@ class ServiceSalonViewSet(BaseViewSet):
             services = request.data
             for service_infor in services:
                 service_id = service_infor.get("service")
-                service_existed_in_salon = service_models.ServiceSalon.objects.filter(
+                service_existed_in_salon = models.ServiceSalon.objects.filter(
                     salon_id=account.id, service_id=service_id
                 ).exists()
                 if service_existed_in_salon:
                     continue
-                service_exist = service_models.Service.objects.filter(
-                    id=service_id
-                ).exists()
+                service_exist = models.Service.objects.filter(id=service_id).exists()
                 if not service_exist:
                     return Response(
                         {
-                            "status": status.HTTP_400_BAD_REQUEST,
+                            "code": ServiceErrorCode.NOT_FOUND,
                             "message": "Service doesn't exist",
-                        }
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
                 price = service_infor.get("price")
                 if not price:
                     return Response(
                         {
-                            "status": status.HTTP_400_BAD_REQUEST,
+                            "code": ServiceErrorCode.REQUIRED,
                             "message": "Price is required",
-                        }
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
                 models.ServiceSalon.objects.create(
                     service_id=service_id,
@@ -131,3 +185,6 @@ class ServiceSalonViewSet(BaseViewSet):
             "message": "Update function is not offered in this path.",
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        return super().destroy(request, pk=None)

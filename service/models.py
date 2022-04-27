@@ -9,7 +9,7 @@ from django.conf import settings
 
 
 class Service(TimeStampedModel):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     gender = models.CharField(max_length=6, choices=Gender.choices)
 
 
