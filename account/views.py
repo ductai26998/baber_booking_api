@@ -1,3 +1,6 @@
+from urllib.parse import unquote
+
+import requests
 from base.views import BaseAPIView, BaseViewSet
 from django.contrib.auth.hashers import check_password
 from django.db import transaction
@@ -6,6 +9,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from service import models as service_models
 
 from account.serializers.user import UserUpdateSerializer
 
@@ -418,6 +422,8 @@ class Address:
         if not url:
             return
         self.position_url = url
+        url = self.get_origin_url_from_short_url(url)
+        url = unquote(url)
         url = url.replace("https://www.google.com/maps/place/", "")
         types = url.split("/")
         self.address = types[0].replace("+", " ")
@@ -435,6 +441,12 @@ class Address:
         location = types[1].replace("@", "").split(",")
         self.lat = location[0]
         self.lng = location[1]
+
+    @classmethod
+    def get_origin_url_from_short_url(self, url: str):
+        session = requests.Session()  # so connections are recycled
+        resp = session.head(url, allow_redirects=True)
+        return resp.url
 
 
 # class AddressViewSet(viewsets.ModelViewSet):
@@ -497,3 +509,37 @@ class AddressUpdate(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
             )
+
+
+# class GetServicesOfSalon(APIView):
+#     def get(self, request):
+#         try:
+#             salon_id = request.data.get("salon_id")
+#             services = service_models.ServiceSalon.objects.filter(salon_id=salon_id)
+#             # queryset = self.filter_queryset(self.get_queryset())
+
+#             # page = self.paginate_queryset(queryset)
+#             # if page is not None:
+#             #     serializer = self.get_serializer(page, many=True)
+#             #     return self.get_paginated_response(serializer.data)
+
+#             # serializer = self.get_serializer(queryset, many=True)
+#             # return Response(serializer.data)
+#             print(services)
+#             return Response(
+#                 {
+#                     "message": "Get services of salon successfully",
+#                     "data": services,
+#                 },
+#                 status=status.HTTP_200_OK,
+#             )
+#         except Exception as e:
+#             return Response(
+#                 {
+#                     "code": AccountErrorCode.PROCESSING_ERROR,
+#                     "message": "Can not get the services of salon",
+#                     "errors": e.args,
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST,
+#                 exception=e,
+#             )
