@@ -38,10 +38,6 @@ class Address(TimeStampedModel):
     )
 
 
-class UserManager(BaseUserManager):
-    pass
-
-
 class UserQueryset(models.QuerySet):
     def filter(self: models.QuerySet, *args: Any, **kwargs: Any) -> models.QuerySet:
         # if "type" is not in kwargs, default: hide orders with type RETURN
@@ -52,6 +48,10 @@ class UserQueryset(models.QuerySet):
     def all(self) -> models.QuerySet:
         # Hidden type: RETURN
         return self.filter()
+
+
+class UserManager(BaseUserManager):
+    objects = UserQueryset.as_manager()
 
 
 class BaseUser(AbstractUser, TimeStampedModel):
@@ -80,7 +80,6 @@ class BaseUser(AbstractUser, TimeStampedModel):
         Address, related_name="+", null=True, blank=True, on_delete=models.SET_NULL
     )
 
-    objects = UserQueryset.as_manager()
     USERNAME_FIELD = "username"
 
     class Meta:
