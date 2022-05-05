@@ -12,6 +12,7 @@ from ..serializers import (
     SalonSerializer,
     UserSerializer,
     VerifyAccountSerializer,
+    AdminSerializer,
 )
 
 
@@ -115,6 +116,8 @@ class LoginWithEmailOrUsername(APIView):
             if account.is_salon:
                 salon = models.Salon.objects.get(id=account.id)
                 serializer = SalonSerializer(salon)
+            elif account.is_superuser:
+                serializer = AdminSerializer(account)
             else:
                 user = models.User.objects.get(id=account.id)
                 serializer = UserSerializer(user)

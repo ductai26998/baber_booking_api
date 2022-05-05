@@ -13,7 +13,51 @@ class BaseViewSet(viewsets.ModelViewSet):
         return self.serializer_map.get(self.action, self.serializer_class)
 
     def get_permissions(self):
-        return [permission() for permission in self.permission_map.get(self.action, self.permission_classes)]
+        return [
+            permission()
+            for permission in self.permission_map.get(
+                self.action, self.permission_classes
+            )
+        ]
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        print(response.data)
+        if response.status_code < 400:
+            return Response(
+                {
+                    "data": response.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {
+                    "message": response.text,
+                    "errors": response.data,
+                },
+                status=response.status_code,
+            )
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        print(response.data)
+        if response.status_code < 400:
+            return Response(
+                {
+                    "data": response.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {
+                    "message": response.text,
+                    "errors": response.json(),
+                },
+                status=response.status_code,
+            )
+
 
 class BaseAPIView(views.APIView):
     @classmethod
