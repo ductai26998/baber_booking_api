@@ -1,5 +1,4 @@
 from rest_framework.renderers import JSONRenderer
-from rest_framework.utils import json
 
 
 class ApiRenderer(JSONRenderer):
@@ -21,5 +20,3 @@ class ApiRenderer(JSONRenderer):
         if error:
             response_dict["error"] = error
         return super().render(response_dict, accepted_media_type, renderer_context)
-
-
