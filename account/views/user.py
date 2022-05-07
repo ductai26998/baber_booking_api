@@ -34,7 +34,7 @@ class UserViewSet(BaseViewSet):
     def create(self, request):
         response = {
             "code": AccountErrorCode.NOT_FOUND,
-            "message": "Create function is not offered in this path.",
+            "detail": "Create function is not offered in this path.",
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
@@ -42,7 +42,7 @@ class UserViewSet(BaseViewSet):
         if str(request.user.id) != pk:
             response = {
                 "code": AccountErrorCode.PERMISSION_DENIED,
-                "message": "Permission denied",
+                "detail": "Permission denied",
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         return super().partial_update(request, pk)
@@ -54,7 +54,7 @@ class UserViewSet(BaseViewSet):
                 return Response(
                     {
                         "code": AccountErrorCode.INACTIVE,
-                        "message": "User is inactive",
+                        "detail": "User is inactive",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -62,7 +62,7 @@ class UserViewSet(BaseViewSet):
             user.save()
             return Response(
                 {
-                    "message": "User is deactivated successfully",
+                    "detail": "User is deactivated successfully",
                 },
                 status=status.HTTP_200_OK,
             )
@@ -70,8 +70,8 @@ class UserViewSet(BaseViewSet):
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Deactivation failed",
-                    "errors": e.args,
+                    "detail": "Deactivation failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
@@ -95,9 +95,11 @@ class UserRegister(BaseAPIView):
                 response = UserRegisterSerializer(account)
                 return Response(
                     {
-                        "message": "Registration successfully, check email to get otp",
-                        "data": response.data,
-                        "access_token": str(token.access_token),
+                        "detail": "Registration successfully, check email to get otp",
+                        "data": {
+                            **response.data,
+                            "access_token": str(token.access_token),
+                        },
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -105,19 +107,17 @@ class UserRegister(BaseAPIView):
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Register user failed",
-                    "errors": serializer._errors,
+                    "detail": "Register user failed",
+                    "messages": serializer.errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
-                exception=serializer._errors,
             )
         except Exception as e:
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Register user failed",
-                    "errors": e.args,
+                    "detail": "Register user failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
-                exception=e,
             )

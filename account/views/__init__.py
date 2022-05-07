@@ -27,7 +27,7 @@ class VerifyOTP(BaseAPIView):
                 return Response(
                     {
                         "code": AccountErrorCode.VERIFY_FAIL,
-                        "message": "User is verified before",
+                        "detail": "User is verified before",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -41,7 +41,7 @@ class VerifyOTP(BaseAPIView):
                     return Response(
                         {
                             "code": AccountErrorCode.INVALID,
-                            "message": "Invalid email",
+                            "detail": "Invalid email",
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -49,7 +49,7 @@ class VerifyOTP(BaseAPIView):
                     return Response(
                         {
                             "code": AccountErrorCode.INVALID,
-                            "message": "OTP wrong",
+                            "detail": "OTP wrong",
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -58,7 +58,7 @@ class VerifyOTP(BaseAPIView):
 
                 return Response(
                     {
-                        "message": "Verification successfully",
+                        "detail": "Verification successfully",
                         "data": serializer.data,
                     },
                     status=status.HTTP_200_OK,
@@ -66,18 +66,18 @@ class VerifyOTP(BaseAPIView):
             return Response(
                 {
                     "code": AccountErrorCode.VERIFY_FAIL,
-                    "message": "OTP verification failed",
-                    "errors": serializer._errors,
+                    "detail": "OTP verification failed",
+                    "messages": serializer.errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
-                exception=serializer._errors,
+                exception=serializer.errors,
             )
         except Exception as e:
             return Response(
                 {
                     "code": AccountErrorCode.VERIFY_FAIL,
-                    "message": "OTP verification failed",
-                    "errors": e.args,
+                    "detail": "OTP verification failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
@@ -97,7 +97,7 @@ class LoginWithEmailOrUsername(APIView):
                 return Response(
                     {
                         "code": AccountErrorCode.NOT_FOUND,
-                        "message": "Email or username is not exist",
+                        "detail": "Email or username is not exist",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -107,7 +107,7 @@ class LoginWithEmailOrUsername(APIView):
                 return Response(
                     {
                         "code": AccountErrorCode.VERIFY_FAIL,
-                        "message": "Password is wrong",
+                        "detail": "Password is wrong",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -123,9 +123,11 @@ class LoginWithEmailOrUsername(APIView):
                 serializer = UserSerializer(user)
             return Response(
                 {
-                    "message": "Login successfully",
-                    "data": serializer.data,
-                    "access_token": str(token.access_token),
+                    "detail": "Login successfully",
+                    "data": {
+                        **serializer.data,
+                        "access_token": str(token.access_token),
+                    },
                 },
                 status=status.HTTP_200_OK,
             )
@@ -133,8 +135,8 @@ class LoginWithEmailOrUsername(APIView):
             return Response(
                 {
                     "code": AccountErrorCode.VERIFY_FAIL,
-                    "message": "Login failed",
-                    "errors": e.args,
+                    "detail": "Login failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
