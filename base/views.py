@@ -20,42 +20,54 @@ class BaseViewSet(viewsets.ModelViewSet):
             )
         ]
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {
+                    "detail": kwargs.get("fail_detail"),
+                    "code": kwargs.get("code"),
+                    "messages": e.args,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        print(response.data)
-        if response.status_code < 400:
-            return Response(
-                {
-                    "data": response.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response(
-                {
-                    "message": response.text,
-                    "errors": response.data,
-                },
-                status=response.status_code,
-            )
+        return Response(
+            {
+                "detail": kwargs.get("success_detail"),
+                "data": response.data,
+            }
+        )
 
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
-        print(response.data)
-        if response.status_code < 400:
+        return Response(
+            {
+                "detail": kwargs.get("success_detail"),
+                "data": response.data,
+            }
+        )
+
+    def update(self, request, *args, **kwargs):
+        try:
+            response = super().update(request, *args, **kwargs)
             return Response(
                 {
+                    "detail": kwargs.get("success_detail"),
                     "data": response.data,
-                },
-                status=status.HTTP_200_OK,
+                }
             )
-        else:
+        except Exception as e:
             return Response(
                 {
-                    "message": response.text,
-                    "errors": response.json(),
+                    "detail": kwargs.get("fail_detail"),
+                    "code": kwargs.get("code"),
+                    "messages": e.args,
                 },
-                status=response.status_code,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 

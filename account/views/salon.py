@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.forms.utils import ErrorDict
 
 from . import AccountErrorCode, models
 from ..serializers import (
@@ -46,7 +47,7 @@ class SalonViewSet(BaseViewSet):
     def create(self, request):
         response = {
             "code": AccountErrorCode.NOT_FOUND,
-            "message": "Create function is not offered in this path.",
+            "detail": "Create function is not offered in this path.",
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
@@ -55,11 +56,17 @@ class SalonViewSet(BaseViewSet):
             return Response(
                 {
                     "code": AccountErrorCode.PERMISSION_DENIED,
-                    "message": "Permission denied",
+                    "detail": "Permission denied",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().partial_update(request, pk)
+        return super().partial_update(
+            request,
+            pk,
+            code=AccountErrorCode.INVALID,
+            fail_detail="Update salon info was failed",
+            success_detail="Update the salon info successful",
+        )
 
     def destroy(self, request, pk=None):
         try:
@@ -68,7 +75,7 @@ class SalonViewSet(BaseViewSet):
                 return Response(
                     {
                         "code": AccountErrorCode.INACTIVE,
-                        "message": "Salon is inactive",
+                        "detail": "Salon is inactive",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -76,7 +83,7 @@ class SalonViewSet(BaseViewSet):
             salon.save()
             return Response(
                 {
-                    "message": "Salon is deactivated",
+                    "detail": "Salon is deactivated",
                 },
                 status=status.HTTP_200_OK,
             )
@@ -84,8 +91,8 @@ class SalonViewSet(BaseViewSet):
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Deactivation failed",
-                    "errors": e.args,
+                    "detail": "Deactivation failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
@@ -102,7 +109,8 @@ class SalonRegister(APIView):
                 return Response(
                     {
                         "code": AccountErrorCode.REQUIRED,
-                        "message": "Address url is required",
+                        "detail": "Address url is required",
+                        "messages": {"address_url": ["Address url is required"]},
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -136,30 +144,30 @@ class SalonRegister(APIView):
 
                 return Response(
                     {
-                        "message": "Registration successfully, check email to get otp",
-                        "data": response.data,
-                        "access_token": str(token.access_token),
+                        "detail": "Registration successfully, check email to get otp",
+                        "data": {
+                            **response.data,
+                            "access_token": str(token.access_token),
+                        },
                     },
                     status=status.HTTP_200_OK,
                 )
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Register salon failed",
-                    "errors": serialize_account._errors,
+                    "detail": "Register salon failed",
+                    "messages": serialize_account.errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
-                exception=serialize_account._errors,
             )
         except Exception as e:
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Register salon failed",
-                    "errors": e.args,
+                    "detail": "Register salon failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
-                exception=e,
             )
 
 
@@ -176,7 +184,7 @@ class AddressUpdate(APIView):
                 return Response(
                     {
                         "code": AccountErrorCode.REQUIRED,
-                        "message": "Address url is required",
+                        "detail": "Address url is required",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -201,7 +209,7 @@ class AddressUpdate(APIView):
             serializer = AddressSerializer(current_address)
             return Response(
                 {
-                    "message": "Update address successfully",
+                    "detail": "Update address successfully",
                     "data": serializer.data,
                 },
                 status=status.HTTP_200_OK,
@@ -211,8 +219,8 @@ class AddressUpdate(APIView):
             return Response(
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
-                    "message": "Update address failed",
-                    "errors": e.args,
+                    "detail": "Update address failed",
+                    "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
