@@ -1,6 +1,5 @@
 import uuid
 
-from account import Gender
 from account.models import Salon
 from base.models import TimeStampedModel
 from django.db import models
@@ -10,7 +9,6 @@ from django.conf import settings
 
 class Service(TimeStampedModel):
     name = models.CharField(max_length=255)
-    gender = models.CharField(max_length=6, choices=Gender.choices)
 
 
 class ServiceSalon(models.Model):

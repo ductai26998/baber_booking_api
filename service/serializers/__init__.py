@@ -8,7 +8,6 @@ class ServiceInputSerializer(serializers.ModelSerializer):
         model = models.Service
         fields = [
             "name",
-            "gender",
         ]
 
 
@@ -17,8 +16,8 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = models.Service
         fields = [
             "id",
+            "created_at",
             "name",
-            "gender",
         ]
 
 

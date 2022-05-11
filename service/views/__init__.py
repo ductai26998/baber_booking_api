@@ -31,10 +31,7 @@ class ServiceViewSet(BaseViewSet):
             data = request.data
             price = data.pop("price")
             name = data.get("name")
-            gender = data.get("gender")
-            service_exist = models.Service.objects.filter(
-                name__iexact=name, gender=gender
-            ).exists()
+            service_exist = models.Service.objects.filter(name__iexact=name).exists()
             if service_exist:
                 return Response(
                     {
