@@ -22,7 +22,13 @@ class BaseViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            return super().create(request, *args, **kwargs)
+            response = super().create(request, *args, **kwargs)
+            return Response(
+                {
+                    "detail": kwargs.get("success_detail"),
+                    "data": response.data,
+                }
+            )
         except Exception as e:
             return Response(
                 {
