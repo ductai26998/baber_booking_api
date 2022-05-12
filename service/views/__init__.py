@@ -36,7 +36,7 @@ class ServiceViewSet(BaseViewSet):
                 return Response(
                     {
                         "code": ServiceErrorCode.EXISTED,
-                        "message": "Service existed",
+                        "messages": "Service existed",
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -53,7 +53,7 @@ class ServiceViewSet(BaseViewSet):
                 service_salon = ServiceSalonInputSerializer(service_salon_object)
                 return Response(
                     {
-                        "message": "Success add a new service",
+                        "messages": "Success add a new service",
                         "data": service_salon.data,
                     },
                     status=status.HTTP_200_OK,
@@ -61,7 +61,7 @@ class ServiceViewSet(BaseViewSet):
             return Response(
                 {
                     "code": ServiceErrorCode.PROCESSING_ERROR,
-                    "message": "Add new service failed",
+                    "messages": "Add new service failed",
                     "errors": serializer._errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -71,7 +71,7 @@ class ServiceViewSet(BaseViewSet):
             return Response(
                 {
                     "code": ServiceErrorCode.PROCESSING_ERROR,
-                    "message": "Add new service failed",
+                    "messages": "Add new service failed",
                     "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -81,14 +81,14 @@ class ServiceViewSet(BaseViewSet):
     def partial_update(self, request, pk=None):
         response = {
             "code": ServiceErrorCode.NOT_FOUND,
-            "message": "Partial update function is not offered in this path.",
+            "messages": "Partial update function is not offered in this path.",
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
         response = {
             "code": ServiceErrorCode.NOT_FOUND,
-            "message": "Update function is not offered in this path.",
+            "messages": "Update function is not offered in this path.",
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
@@ -118,17 +118,24 @@ class ServiceSalonViewSet(BaseViewSet):
             services = request.data
             for service_infor in services:
                 service_id = service_infor.get("service")
-                service_existed_in_salon = models.ServiceSalon.objects.filter(
+                service_in_salon = models.ServiceSalon.objects.filter(
                     salon_id=account.id, service_id=service_id
-                ).exists()
-                if service_existed_in_salon:
-                    continue
+                ).first()
+                if service_in_salon:
+                    return Response(
+                        {
+                            "code": ServiceErrorCode.EXISTED,
+                            "messages": "Service '%s' existed"
+                            % service_in_salon.service.name,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
                 service_exist = models.Service.objects.filter(id=service_id).exists()
                 if not service_exist:
                     return Response(
                         {
                             "code": ServiceErrorCode.NOT_FOUND,
-                            "message": "Service doesn't exist",
+                            "messages": "Service doesn't exist",
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -137,7 +144,7 @@ class ServiceSalonViewSet(BaseViewSet):
                     return Response(
                         {
                             "code": ServiceErrorCode.REQUIRED,
-                            "message": "Price is required",
+                            "messages": "Price is required",
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -149,15 +156,16 @@ class ServiceSalonViewSet(BaseViewSet):
                 )
             return Response(
                 {
-                    "message": "Success add service into salon",
+                    "messages": "Success add service into salon",
                 },
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
+            print(e)
             return Response(
                 {
                     "code": ServiceErrorCode.PROCESSING_ERROR,
-                    "message": "Add new service failed",
+                    "messages": "Add new service failed",
                     "errors": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -166,22 +174,37 @@ class ServiceSalonViewSet(BaseViewSet):
 
     def partial_update(self, request, pk=None):
         instance = self.get_object()
-        if str(request.user.id) != instance.salon_id:
+        data = request.data
+        price = data.pop("price")
+        data["price_amount"] = price["amount"]
+        print(data)
+        if request.user.id != instance.salon_id:
             return Response(
                 {
                     "code": ServiceErrorCode.PERMISSION_DENIED,
-                    "message": "Permission denied",
+                    "messages": "Permission denied",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().partial_update(request, pk)
+        return super().partial_update(
+            request,
+            pk=pk,
+            code=ServiceErrorCode.INVALID,
+            fail_detail="Update service was failed",
+            success_detail="Update service successfully",
+        )
 
     def update(self, request, pk=None):
         response = {
             "code": ServiceErrorCode.NOT_FOUND,
-            "message": "Update function is not offered in this path.",
+            "messages": "Update function is not offered in this path.",
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
-        return super().destroy(request, pk=None)
+        return super().destroy(
+            request,
+            pk,
+            success_detail="Delete service successfully",
+            fail_detail="Can not delete this service",
+        )

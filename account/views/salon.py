@@ -1,3 +1,4 @@
+from service.serializers import ServiceSalonSerializer
 from .address import Address
 from base.views import BaseViewSet
 from django.db import transaction
@@ -6,7 +7,6 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.forms.utils import ErrorDict
 
 from . import AccountErrorCode, models
 from ..serializers import (
@@ -15,6 +15,8 @@ from ..serializers import (
     SalonRegisterSerializer,
     SalonSerializer,
 )
+from rest_framework.decorators import action
+from rest_framework.renderers import JSONRenderer
 
 
 class SalonViewSet(BaseViewSet):
@@ -25,6 +27,22 @@ class SalonViewSet(BaseViewSet):
     permission_map = {
         "destroy": [IsAdminUser],
     }
+
+    @action(detail=True)
+    def services(self, request, *args, **kwargs):
+        """
+        Returns a list of all the group names that the given
+        user belongs to.
+        """
+        user = self.get_object()
+        services = user.services.all()
+        data = [ServiceSalonSerializer(service).data for service in services]
+        response_dict = {
+            "detail": None,
+            "data": data,
+            "error": None,
+        }
+        return Response(response_dict)
 
     def list(self, request):
         search_query = request.query_params.get("q", "")
@@ -225,43 +243,3 @@ class AddressUpdate(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
             )
-
-
-# class AddressViewSet(viewsets.ModelViewSet):
-#     permission_classes = [IsAuthenticated]
-#     queryset = models.Address.objects.all()
-#     serializer_class = AddressSerializer
-
-
-# class GetServicesOfSalon(APIView):
-#     def get(self, request):
-#         try:
-#             salon_id = request.data.get("salon_id")
-#             services = service_models.ServiceSalon.objects.filter(salon_id=salon_id)
-#             # queryset = self.filter_queryset(self.get_queryset())
-
-#             # page = self.paginate_queryset(queryset)
-#             # if page is not None:
-#             #     serializer = self.get_serializer(page, many=True)
-#             #     return self.get_paginated_response(serializer.data)
-
-#             # serializer = self.get_serializer(queryset, many=True)
-#             # return Response(serializer.data)
-#             print(services)
-#             return Response(
-#                 {
-#                     "message": "Get services of salon successfully",
-#                     "data": services,
-#                 },
-#                 status=status.HTTP_200_OK,
-#             )
-#         except Exception as e:
-#             return Response(
-#                 {
-#                     "code": AccountErrorCode.PROCESSING_ERROR,
-#                     "message": "Can not get the services of salon",
-#                     "errors": e.args,
-#                 },
-#                 status=status.HTTP_400_BAD_REQUEST,
-#                 exception=e,
-#             )

@@ -1,9 +1,12 @@
 from account import models
 from account.email import send_otp_to_email
 from rest_framework import serializers
+from service.serializers import ServiceSalonSerializer
 
 
 class SalonSerializer(serializers.ModelSerializer):
+    services = ServiceSalonSerializer(many=True, read_only=True)
+
     class Meta:
         model = models.Salon
         fields = [
@@ -25,8 +28,9 @@ class SalonSerializer(serializers.ModelSerializer):
             "last_name",
             "is_salon",
             "is_superuser",
+            "services",
         ]
-        depth = 2
+        depth = 1
 
 
 class SalonRegisterInputSerializer(serializers.ModelSerializer):

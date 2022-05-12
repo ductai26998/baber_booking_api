@@ -5,9 +5,8 @@ from . import views
 
 router = DefaultRouter()
 
-router.register('', views.ServiceViewSet)
-# router.register('salon-service', views.ServiceSalonViewSet)
+router.register("services", views.ServiceViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]
