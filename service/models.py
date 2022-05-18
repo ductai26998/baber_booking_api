@@ -1,6 +1,5 @@
 import uuid
 
-from account import Gender
 from account.models import Salon
 from base.models import TimeStampedModel
 from django.db import models
@@ -9,14 +8,15 @@ from django.conf import settings
 
 
 class Service(TimeStampedModel):
-    name = models.CharField(max_length=255)
-    gender = models.CharField(max_length=6, choices=Gender.choices)
+    name = models.CharField(max_length=255, unique=True)
 
 
 class ServiceSalon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    salon = models.ForeignKey(Salon, on_delete=models.CASCADE)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="services")
+    service = models.ForeignKey(
+        Service, on_delete=models.CASCADE, related_name="service_salon"
+    )
     price_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,

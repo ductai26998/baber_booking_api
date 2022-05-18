@@ -45,3 +45,9 @@ class Address:
         session = requests.Session()  # so connections are recycled
         resp = session.head(url, allow_redirects=True)
         return resp.url
+
+
+# class AddressViewSet(viewsets.ModelViewSet):
+#     permission_classes = [IsAuthenticated]
+#     queryset = models.Address.objects.all()
+#     serializer_class = AddressSerializer

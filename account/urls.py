@@ -7,10 +7,10 @@ from service import views as service_views
 
 router = DefaultRouter()
 
-router.register("user", user_views.UserViewSet)
-router.register("salon", salon_views.SalonViewSet)
+router.register("users", user_views.UserViewSet)
+router.register("salons", salon_views.SalonViewSet)
 
-router.register("salonService", service_views.ServiceSalonViewSet)
+router.register("salonServices", service_views.ServiceSalonViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
