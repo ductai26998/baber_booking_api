@@ -1,5 +1,6 @@
 from account import models
 from account.email import send_otp_to_email
+from account.serializers.address import AddressSerializerInput
 from rest_framework import serializers
 from service.serializers import ServiceSalonSerializer
 
@@ -34,6 +35,8 @@ class SalonSerializer(serializers.ModelSerializer):
 
 
 class SalonRegisterInputSerializer(serializers.ModelSerializer):
+    address = AddressSerializerInput()
+
     class Meta:
         model = models.Salon
         fields = [
@@ -45,7 +48,20 @@ class SalonRegisterInputSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "password",
+            "address",
         ]
+
+    def create(self, validated_data):
+        address_data = validated_data.pop("address")
+        province = address_data.get("province") or ""
+        district = address_data.get("district") or ""
+        ward = address_data.get("ward") or ""
+        hamlet = address_data.get("hamlet") or ""
+        address_specific = hamlet + ", " + ward + ", " + district + ", " + province
+        address_data["address"] = address_specific
+        address = models.Address.objects.create(**address_data)
+        salon = models.Salon.objects.create(**validated_data, address=address)
+        return salon
 
     def save(self, **kwargs):
         super().save(**kwargs)

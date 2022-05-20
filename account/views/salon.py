@@ -1,22 +1,22 @@
-from service.serializers import ServiceSalonSerializer
-from .address import Address
 from base.views import BaseViewSet
 from django.db import transaction
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from service.serializers import ServiceSalonSerializer
 
-from . import AccountErrorCode, models
 from ..serializers import (
     AddressSerializer,
     SalonRegisterInputSerializer,
     SalonRegisterSerializer,
     SalonSerializer,
 )
-from rest_framework.decorators import action
-from rest_framework.renderers import JSONRenderer
+from . import AccountErrorCode, models
+from .address import Address
 
 
 class SalonViewSet(BaseViewSet):
@@ -122,43 +122,26 @@ class SalonRegister(APIView):
     def post(self, request):
         try:
             data = request.data
-            address_url = data.get("address_url")
-            if not address_url or address_url.strip() == "":
-                return Response(
-                    {
-                        "code": AccountErrorCode.REQUIRED,
-                        "detail": "Address url is required",
-                        "messages": {"address_url": ["Address url is required"]},
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            serialize_account = SalonRegisterInputSerializer(data=data)
-            if serialize_account.is_valid():
-                serialize_account.validated_data
-                serialize_account.save()
-                email = serialize_account.data["email"]
-                account = models.Salon.objects.get(email=email)
-                account.is_salon = True
-                account.is_active = True
+            serialize_salon = SalonRegisterInputSerializer(data=data)
+            if serialize_salon.is_valid():
+                serialize_salon.validated_data
+                serialize_salon.save()
+                email = serialize_salon.data["email"]
+                salon = models.Salon.objects.get(email=email)
+                salon.is_salon = True
+                salon.is_active = True
 
-                # create address
-                address = Address()
-                address.set_address_from_url(address_url)
-                account_address = models.Address.objects.create(
-                    address=address.address,
-                    province=address.province,
-                    district=address.district,
-                    ward=address.ward,
-                    hamlet=address.hamlet,
-                    lat=address.lat,
-                    lng=address.lng,
-                    position_url=address.position_url,
-                )
+                if data.get("address") and data.get("address").get("position_url"):
+                    address_ref = Address()
+                    lat, lng = address_ref.get_position_from_url(
+                        data.get("address").get("position_url")
+                    )
+                    address = salon.address
+                    address.lat = lat
+                    address.lng = lng
 
-                account.address = account_address
-                account.save()
-                token = RefreshToken.for_user(account)
-                response = SalonRegisterSerializer(account)
+                token = RefreshToken.for_user(salon)
+                response = SalonRegisterSerializer(salon)
 
                 return Response(
                     {
@@ -174,7 +157,7 @@ class SalonRegister(APIView):
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "detail": "Register salon failed",
-                    "messages": serialize_account.errors,
+                    "messages": serialize_salon.errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -197,8 +180,8 @@ class AddressUpdate(APIView):
         try:
             account = request.user
             data = request.data
-            address_url = data.get("address_url")
-            if address_url.strip() == "":
+            position_url = data.get("position_url")
+            if position_url.strip() == "":
                 return Response(
                     {
                         "code": AccountErrorCode.REQUIRED,
@@ -207,7 +190,7 @@ class AddressUpdate(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             address = Address()
-            address.set_address_from_url(address_url)
+            address.set_address_from_url(position_url)
             current_address = account.address
 
             current_address.address = address.address

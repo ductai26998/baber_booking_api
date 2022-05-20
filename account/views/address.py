@@ -41,6 +41,19 @@ class Address:
         self.lng = location[1]
 
     @classmethod
+    def get_position_from_url(self, url: str):
+        if not url:
+            return
+        url = self.get_origin_url_from_short_url(url)
+        url = unquote(url)
+        url = url.replace("https://www.google.com/maps/place/", "")
+        types = url.split("/")
+        location = types[1].replace("@", "").split(",")
+        lat = location[0]
+        lng = location[1]
+        return (lat, lng)
+
+    @classmethod
     def get_origin_url_from_short_url(self, url: str):
         session = requests.Session()  # so connections are recycled
         resp = session.head(url, allow_redirects=True)
