@@ -64,6 +64,7 @@ class BookingViewSet(BaseViewSet):
                     models.BookingService(
                         booking=booking,
                         service=salon_service.service,
+                        price=salon_service.price,
                     )
                 )
             models.BookingService.objects.bulk_create(booking_services)
