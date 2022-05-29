@@ -2,12 +2,17 @@ from account.models import Salon, User
 from base.models import MoneyField, TimeStampedModel
 from django.conf import settings
 from django.db import models
+from service.models import Service
+
+from . import BookingStatus
 
 
 class Booking(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="bookings")
-    status = models.CharField(max_length=32)
+    status = models.CharField(
+        max_length=32, choices=BookingStatus.choices, default=BookingStatus.NEW
+    )
     total_net_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
@@ -22,10 +27,10 @@ class Booking(TimeStampedModel):
 
 class BookingService(TimeStampedModel):
     booking = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="booking_services"
+        Booking, on_delete=models.CASCADE, related_name="booking_services"
     )
     service = models.ForeignKey(
-        Salon, on_delete=models.SET_NULL, related_name="booking_services", null=True
+        Service, on_delete=models.SET_NULL, related_name="booking_services", null=True
     )
     price_amount = models.DecimalField(
         max_digits=settings.DEFAULT_MAX_DIGITS,
