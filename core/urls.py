@@ -32,6 +32,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     url("", include("account.urls")),
     url("", include("service.urls")),
+    url("", include("booking.urls")),
     url("verifyOTP/", VerifyOTP.as_view(), name="verify_user"),
     url("login/", LoginWithEmailOrUsername.as_view(), name="login"),
     # apis for salon
