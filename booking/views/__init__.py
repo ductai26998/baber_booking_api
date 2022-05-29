@@ -84,17 +84,3 @@ class BookingViewSet(BaseViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-    # def partial_update(self, request, pk=None):
-    #     response = {
-    #         "code": ServiceErrorCode.NOT_FOUND,
-    #         "messages": "Partial update function is not offered in this path.",
-    #     }
-    #     return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-    # def update(self, request, pk=None):
-    #     response = {
-    #         "code": ServiceErrorCode.NOT_FOUND,
-    #         "messages": "Update function is not offered in this path.",
-    #     }
-    #     return Response(response, status=status.HTTP_400_BAD_REQUEST)
