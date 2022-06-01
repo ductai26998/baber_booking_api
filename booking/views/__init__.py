@@ -87,6 +87,19 @@ class BookingViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    def retrieve(self, request, *args, **kwargs):
+        booking = self.get_object()
+        if request.user.id not in [booking.salon_id, booking.user_id]:
+            return Response(
+                {
+                    "code": BookingErrorCode.PERMISSION_DENIED,
+                    "detail": "Permission denied",
+                    "messages": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().retrieve(request, *args, **kwargs)
+
     @action(detail=True, methods=["post"])
     def confirm(self, request, *args, **kwargs):
         """
