@@ -4,10 +4,11 @@ from account import models as account_models
 from base.views import BaseViewSet
 from django.db import transaction
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .. import BookingErrorCode, models
+from .. import BookingErrorCode, BookingStatus, models
 from ..serializers import BookingCreateInputSerializer, BookingSerializer
 
 
@@ -85,3 +86,38 @@ class BookingViewSet(BaseViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, *args, **kwargs):
+        """
+        Confirm the booking
+        """
+        booking = self.get_object()
+        if booking.salon_id != request.user.id:
+            return Response(
+                {
+                    "code": BookingErrorCode.PERMISSION_DENIED,
+                    "detail": "Permission denied",
+                    "messages": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.status != BookingStatus.NEW:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID,
+                    "detail": "The booking status must be '%s'" % BookingStatus.NEW,
+                    "messages": "The booking status must be '%s'" % BookingStatus.NEW,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.status = BookingStatus.CONFIRMED
+        booking.save(update_fields=("status",))
+        response = BookingSerializer(booking)
+        return Response(
+            {
+                "detail": "Confirm booking successful",
+                "data": response.data,
+            },
+            status=status.HTTP_200_OK,
+        )
