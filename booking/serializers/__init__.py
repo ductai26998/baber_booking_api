@@ -1,3 +1,5 @@
+from account.serializers.salon import SalonBaseViewSerializer
+from account.serializers.user import UserBaseViewSerializer
 from base.serializers import MoneyField
 from booking import models
 from rest_framework import serializers
@@ -19,14 +21,16 @@ class BookingServiceSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     total_net = MoneyField()
     booking_services = BookingServiceSerializer(many=True, read_only=True)
+    user = UserBaseViewSerializer(read_only=True)
+    salon = SalonBaseViewSerializer(read_only=True)
 
     class Meta:
         model = models.Booking
         fields = [
             "id",
             "created_at",
-            "user_id",
-            "salon_id",
+            "user",
+            "salon",
             "status",
             "total_net",
             "booking_services",

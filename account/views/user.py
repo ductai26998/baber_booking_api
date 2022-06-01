@@ -1,7 +1,9 @@
 from account.serializers.user import UserUpdateSerializer
 from base.views import BaseAPIView, BaseViewSet
+from booking.serializers import BookingSerializer
 from django.db import transaction
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -76,6 +78,34 @@ class UserViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
             )
+
+    @action(detail=True)
+    def bookings(self, request, *args, **kwargs):
+        """
+        Returns a list of all the bookings that the given
+        user belongs to.
+        """
+        requester_id = request.user.id
+        user = models.User.objects.filter(id=requester_id).first()
+        if not user:
+            return Response(
+                {
+                    "code": AccountErrorCode.NOT_FOUND,
+                    "detail": "User %s is not exist" % requester_id,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        search_query = request.query_params.get("status", "")
+        bookings = user.bookings.all()
+        if search_query:
+            bookings = bookings.filter(status=search_query)
+        data = [BookingSerializer(booking).data for booking in bookings]
+        response_dict = {
+            "detail": None,
+            "data": data,
+            "error": None,
+        }
+        return Response(response_dict)
 
 
 class UserRegister(BaseAPIView):

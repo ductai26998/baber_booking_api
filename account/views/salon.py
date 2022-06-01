@@ -1,4 +1,5 @@
 from base.views import BaseViewSet
+from booking.serializers import BookingSerializer
 from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
@@ -37,6 +38,34 @@ class SalonViewSet(BaseViewSet):
         user = self.get_object()
         services = user.services.all()
         data = [ServiceSalonSerializer(service).data for service in services]
+        response_dict = {
+            "detail": None,
+            "data": data,
+            "error": None,
+        }
+        return Response(response_dict)
+
+    @action(detail=True)
+    def bookings(self, request, *args, **kwargs):
+        """
+        Returns a list of all the bookings that the given
+        user belongs to.
+        """
+        requester_id = request.user.id
+        salon = models.Salon.objects.filter(id=requester_id).first()
+        if not salon:
+            return Response(
+                {
+                    "code": AccountErrorCode.NOT_FOUND,
+                    "detail": "Salon %s is not exist" % requester_id,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        search_query = request.query_params.get("status", "")
+        bookings = salon.bookings.all()
+        if search_query:
+            bookings = bookings.filter(status=search_query)
+        data = [BookingSerializer(booking).data for booking in bookings]
         response_dict = {
             "detail": None,
             "data": data,

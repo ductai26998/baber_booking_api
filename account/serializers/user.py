@@ -25,6 +25,21 @@ class UserSerializer(serializers.ModelSerializer):
         depth = 2
 
 
+class UserBaseViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = [
+            "id",
+            "address",
+            "gender",
+            "phone_number",
+            "username",
+            "first_name",
+            "last_name",
+        ]
+        depth = 1
+
+
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User

@@ -34,6 +34,21 @@ class SalonSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+class SalonBaseViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Salon
+        fields = [
+            "id",
+            "address",
+            "phone_number",
+            "salon_name",
+            "username",
+            "first_name",
+            "last_name",
+        ]
+        depth = 1
+
+
 class SalonRegisterInputSerializer(serializers.ModelSerializer):
     address = AddressSerializerInput()
 
