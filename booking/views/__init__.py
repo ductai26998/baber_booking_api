@@ -134,3 +134,38 @@ class BookingViewSet(BaseViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["post"])
+    def request_to_complete(self, request, *args, **kwargs):
+        """
+        Salon sends request to user to complete the booking
+        """
+        booking = self.get_object()
+        if booking.salon_id != request.user.id:
+            return Response(
+                {
+                    "code": BookingErrorCode.PERMISSION_DENIED,
+                    "detail": "Permission denied",
+                    "messages": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.status != BookingStatus.CONFIRMED:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID,
+                    "detail": "The booking status must be '%s'" % BookingStatus.CONFIRMED,
+                    "messages": "The booking status must be '%s'" % BookingStatus.CONFIRMED,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.status = BookingStatus.REQUEST_TO_COMPLETE
+        booking.save(update_fields=("status",))
+        response = BookingSerializer(booking)
+        return Response(
+            {
+                "detail": "Sent request to the user to complete booking successfully",
+                "data": response.data,
+            },
+            status=status.HTTP_200_OK,
+        )
