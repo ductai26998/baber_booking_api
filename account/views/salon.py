@@ -158,7 +158,7 @@ class SalonRegister(APIView):
                 email = serialize_salon.data["email"]
                 salon = models.Salon.objects.get(email=email)
                 salon.is_salon = True
-                salon.is_active = True
+                salon.save(update_fields=("is_salon",))
 
                 if data.get("address") and data.get("address").get("position_url"):
                     address_ref = Address()
