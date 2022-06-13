@@ -135,7 +135,7 @@ class BookingViewSet(BaseViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], url_path="requestToComplete")
     def request_to_complete(self, request, *args, **kwargs):
         """
         Salon sends request to user to complete the booking
@@ -154,8 +154,10 @@ class BookingViewSet(BaseViewSet):
             return Response(
                 {
                     "code": BookingErrorCode.INVALID,
-                    "detail": "The booking status must be '%s'" % BookingStatus.CONFIRMED,
-                    "messages": "The booking status must be '%s'" % BookingStatus.CONFIRMED,
+                    "detail": "The booking status must be '%s'"
+                    % BookingStatus.CONFIRMED,
+                    "messages": "The booking status must be '%s'"
+                    % BookingStatus.CONFIRMED,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -165,6 +167,43 @@ class BookingViewSet(BaseViewSet):
         return Response(
             {
                 "detail": "Sent request to the user to complete booking successfully",
+                "data": response.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"], url_path="markAsCompleted")
+    def mark_as_completed(self, request, *args, **kwargs):
+        """
+        User confirms that the booking was completed
+        """
+        booking = self.get_object()
+        if booking.user_id != request.user.id:
+            return Response(
+                {
+                    "code": BookingErrorCode.PERMISSION_DENIED,
+                    "detail": "Permission denied",
+                    "messages": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.status != BookingStatus.REQUEST_TO_COMPLETE:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID,
+                    "detail": "The booking status must be '%s'"
+                    % BookingStatus.REQUEST_TO_COMPLETE,
+                    "messages": "The booking status must be '%s'"
+                    % BookingStatus.REQUEST_TO_COMPLETE,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.status = BookingStatus.COMPLETED
+        booking.save(update_fields=("status",))
+        response = BookingSerializer(booking)
+        return Response(
+            {
+                "detail": "Booking was completed",
                 "data": response.data,
             },
             status=status.HTTP_200_OK,
