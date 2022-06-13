@@ -53,7 +53,7 @@ class ServiceViewSet(BaseViewSet):
                 service_salon = ServiceSalonInputSerializer(service_salon_object)
                 return Response(
                     {
-                        "messages": "Success add a new service",
+                        "detail": "Success add a new service",
                         "data": service_salon.data,
                     },
                     status=status.HTTP_200_OK,
@@ -156,7 +156,7 @@ class ServiceSalonViewSet(BaseViewSet):
                 )
             return Response(
                 {
-                    "messages": "Success add service into salon",
+                    "detail": "Success add service into salon",
                 },
                 status=status.HTTP_200_OK,
             )

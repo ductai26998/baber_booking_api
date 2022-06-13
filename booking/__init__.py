@@ -9,6 +9,6 @@ class BookingErrorCode(CoreErrorCode):
 class BookingStatus(models.TextChoices):
     NEW = "new"
     CONFIRMED = "confirmed"
-    CANCEL = "cancel"
+    CANCELED = "canceled"
     REQUEST_TO_COMPLETE = "request_to_complete"
     COMPLETED = "completed"
