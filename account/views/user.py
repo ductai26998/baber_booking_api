@@ -119,8 +119,6 @@ class UserRegister(BaseAPIView):
                 serializer.save()
                 email = serializer.data["email"]
                 account = models.User.objects.get(email=email)
-                account.is_active = True
-                account.save()
                 token = RefreshToken.for_user(account)
                 response = UserRegisterSerializer(account)
                 return Response(
