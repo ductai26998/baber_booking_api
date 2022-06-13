@@ -135,6 +135,41 @@ class BookingViewSet(BaseViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, *args, **kwargs):
+        """
+        Cancel the booking
+        """
+        booking = self.get_object()
+        if request.user.id not in [booking.salon_id, booking.user_id]:
+            return Response(
+                {
+                    "code": BookingErrorCode.PERMISSION_DENIED,
+                    "detail": "Permission denied",
+                    "messages": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.status != BookingStatus.NEW:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID,
+                    "detail": "The booking status must be '%s'" % BookingStatus.NEW,
+                    "messages": "The booking status must be '%s'" % BookingStatus.NEW,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        booking.status = BookingStatus.CANCELED
+        booking.save(update_fields=("status",))
+        response = BookingSerializer(booking)
+        return Response(
+            {
+                "detail": "Cancel booking successful",
+                "data": response.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     @action(detail=True, methods=["post"], url_path="requestToComplete")
     def request_to_complete(self, request, *args, **kwargs):
         """
