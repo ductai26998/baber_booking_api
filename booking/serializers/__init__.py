@@ -29,6 +29,7 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "created_at",
+            "updated_at",
             "user",
             "salon",
             "status",

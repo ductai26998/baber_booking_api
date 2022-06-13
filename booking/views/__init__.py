@@ -3,6 +3,7 @@ from functools import reduce
 from account import models as account_models
 from base.views import BaseViewSet
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -125,7 +126,8 @@ class BookingViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         booking.status = BookingStatus.CONFIRMED
-        booking.save(update_fields=("status",))
+        booking.updated_at = timezone.now()
+        booking.save(update_fields=["status", "updated_at"])
         response = BookingSerializer(booking)
         return Response(
             {
@@ -160,7 +162,8 @@ class BookingViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         booking.status = BookingStatus.CANCELED
-        booking.save(update_fields=("status",))
+        booking.updated_at = timezone.now()
+        booking.save(update_fields=["status", "updated_at"])
         response = BookingSerializer(booking)
         return Response(
             {
@@ -197,7 +200,8 @@ class BookingViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         booking.status = BookingStatus.REQUEST_TO_COMPLETE
-        booking.save(update_fields=("status",))
+        booking.updated_at = timezone.now()
+        booking.save(update_fields=["status", "updated_at"])
         response = BookingSerializer(booking)
         return Response(
             {
@@ -234,7 +238,8 @@ class BookingViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         booking.status = BookingStatus.COMPLETED
-        booking.save(update_fields=("status",))
+        booking.updated_at = timezone.now()
+        booking.save(update_fields=["status", "updated_at"])
         response = BookingSerializer(booking)
         return Response(
             {

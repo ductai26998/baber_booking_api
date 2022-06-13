@@ -2,12 +2,14 @@ from account.models import Salon, User
 from base.models import MoneyField, TimeStampedModel
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from service.models import Service
 
 from . import BookingStatus
 
 
 class Booking(TimeStampedModel):
+    updated_at = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="bookings")
     status = models.CharField(
