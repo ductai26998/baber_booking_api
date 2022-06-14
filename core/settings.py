@@ -68,7 +68,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://barber-react-admin.vercel.app/",
+    "https://barber-react-admin.vercel.app",
 ]
 
 ROOT_URLCONF = "core.urls"
