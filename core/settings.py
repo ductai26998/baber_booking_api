@@ -189,3 +189,5 @@ cloudinary.config(
     api_key=os.getenv("CLOUDINARY_API_KEY"),
     api_secret=os.getenv("CLOUDINARY_API_SECRET"),
 )
+CLOUDINARY_AVATAR_USER_FOLDER = os.getenv("CLOUDINARY_AVATAR_USER_FOLDER")
+CLOUDINARY_GALLERY_FOLDER = os.getenv("CLOUDINARY_GALLERY_FOLDER")

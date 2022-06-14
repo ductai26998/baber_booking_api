@@ -55,7 +55,6 @@ class SalonRegisterInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Salon
         fields = [
-            "avatar",
             "email",
             "salon_name",
             "phone_number",

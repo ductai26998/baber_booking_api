@@ -71,7 +71,7 @@ class BaseUser(AbstractUser, TimeStampedModel):
     email = models.EmailField(_("email address"), unique=True)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
-    avatar = models.CharField(max_length=256, null=True, blank=True)
+    avatar = models.URLField(max_length=512, null=True, blank=True)
     phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     total_completed_booking = models.PositiveIntegerField(default=0)

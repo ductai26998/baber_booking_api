@@ -1,3 +1,5 @@
+from django.conf import settings
+from base.services.cloudinary import CloudinaryService
 from base.views import BaseViewSet
 from booking.serializers import BookingSerializer
 from django.db import transaction
@@ -107,6 +109,13 @@ class SalonViewSet(BaseViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+        avatar = request.FILES.get("avatar")
+        avatar_folder_path = (
+            settings.CLOUDINARY_AVATAR_USER_FOLDER + pk + "/"
+        )
+        url = CloudinaryService.upload_image(avatar, avatar_folder_path)
+        request.data["avatar"] = url
         return super().partial_update(
             request,
             pk,
