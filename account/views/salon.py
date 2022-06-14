@@ -3,6 +3,8 @@ from base.views import BaseViewSet
 from booking.serializers import BookingSerializer
 from django.conf import settings
 from django.db import transaction
+from gallery import models as gallery_models
+from gallery.serializers import GalleryPhotoSerializer, GallerySerializer
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -152,6 +154,68 @@ class SalonViewSet(BaseViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
             )
+
+    @action(detail=True, methods=["post"], url_path="galleryUpload")
+    @transaction.atomic
+    def gallery_upload(self, request, *args, **kwargs):
+        """
+        Upload photos to gallery
+        """
+        salon = self.get_object()
+        if salon.id != request.user.id:
+            return Response(
+                {
+                    "code": AccountErrorCode.PERMISSION_DENIED,
+                    "detail": "Permission denied",
+                    "messages": "Permission denied",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        gallery = salon.gallery.first()
+        if not gallery:
+            gallery = gallery_models.Gallery.objects.create(salon_id=salon.id)
+
+        photos = request.FILES.getlist("photos")
+        avatar_folder_path = settings.CLOUDINARY_GALLERY_FOLDER + str(salon.id) + "/"
+        gallery_photos = []
+        for photo in photos:
+            url = CloudinaryService.upload_image(photo, avatar_folder_path)
+            gallery_photo = gallery_models.GalleryPhoto(url=url, gallery_id=gallery.id)
+            gallery_photos.append(gallery_photo)
+        gallery_models.GalleryPhoto.objects.bulk_create(gallery_photos)
+        response_data = None
+        if hasattr(gallery, "photos"):
+            response = GallerySerializer(gallery)
+            response_data = response.data
+        return Response(
+            {
+                "detail": "Upload images to gallery successful",
+                "data": response_data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["get"])
+    def gallery(self, request, *args, **kwargs):
+        """
+        Get all photos in gallery
+        """
+        salon = self.get_object()
+        response_data = None
+        if hasattr(salon, "gallery"):
+            gallery = salon.gallery.first()
+            if hasattr(gallery, "photos"):
+                qs = gallery.photos.all()
+                response = GalleryPhotoSerializer(qs, many=True)
+                response_data = response.data
+
+        return Response(
+            {
+                "data": response_data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class SalonRegister(APIView):

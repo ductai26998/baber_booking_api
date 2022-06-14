@@ -26,6 +26,9 @@ class Booking(TimeStampedModel):
     )
     total_net = MoneyField(amount_field="total_net_amount", currency_field="currency")
 
+    class Meta:
+        ordering = ("-created_at",)
+
 
 class BookingService(TimeStampedModel):
     booking = models.ForeignKey(
