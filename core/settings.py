@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import cloudinary.api
 import django_on_heroku
 from django_prices.utils.formatting import get_currency_fraction
 from dotenv import load_dotenv
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "rest_framework_simplejwt",
+    "cloudinary",
     "account",
     "booking",
     "service",
@@ -180,3 +182,10 @@ DEFAULT_CURRENCY = os.environ.get("DEFAULT_CURRENCY", "VND")
 DEFAULT_DECIMAL_PLACES = get_currency_fraction(DEFAULT_CURRENCY)
 DEFAULT_CURRENCY_CODE_LENGTH = 3
 DEFAULT_MAX_DIGITS = 12
+
+# cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
