@@ -1,5 +1,7 @@
+from base.services.cloudinary import CloudinaryService
 from base.views import BaseViewSet
 from booking.serializers import BookingSerializer
+from django.conf import settings
 from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,6 +14,7 @@ from service.serializers import ServiceSalonSerializer
 
 from ..serializers import (
     AddressSerializer,
+    AddressSerializerInput,
     SalonRegisterInputSerializer,
     SalonRegisterSerializer,
     SalonSerializer,
@@ -107,6 +110,11 @@ class SalonViewSet(BaseViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        avatar = request.FILES.get("avatar")
+        avatar_folder_path = settings.CLOUDINARY_AVATAR_USER_FOLDER + pk + "/"
+        url = CloudinaryService.upload_image(avatar, avatar_folder_path)
+        request.data["avatar"] = url
         return super().partial_update(
             request,
             pk,
@@ -151,11 +159,11 @@ class SalonRegister(APIView):
     def post(self, request):
         try:
             data = request.data
-            serialize_salon = SalonRegisterInputSerializer(data=data)
-            if serialize_salon.is_valid():
-                serialize_salon.validated_data
-                serialize_salon.save()
-                email = serialize_salon.data["email"]
+            serializer_salon = SalonRegisterInputSerializer(data=data)
+            if serializer_salon.is_valid():
+                serializer_salon.validated_data
+                serializer_salon.save()
+                email = serializer_salon.data["email"]
                 salon = models.Salon.objects.get(email=email)
                 salon.is_salon = True
                 salon.save(update_fields=("is_salon",))
@@ -186,7 +194,7 @@ class SalonRegister(APIView):
                 {
                     "code": AccountErrorCode.PROCESSING_ERROR,
                     "detail": "Register salon failed",
-                    "messages": serialize_salon.errors,
+                    "messages": serializer_salon.errors,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -207,44 +215,37 @@ class AddressUpdate(APIView):
     @transaction.atomic
     def put(self, request):
         try:
-            account = request.user
-            data = request.data
-            position_url = data.get("position_url")
-            if position_url.strip() == "":
+            address = request.user.address
+            serializer = AddressSerializerInput(data=request.data)
+            if serializer.is_valid():
+                data = serializer.data
+                for key in data:
+                    value = data[key]
+                    if value and value.strip() != "":
+                        setattr(address, key, value)
+
+                address_ref = Address()
+                position_url = data.get("position_url")
+                lat, lng = address_ref.get_position_from_url(position_url)
+                address.lat = lat
+                address.lng = lng
+                address.save()
+                response = AddressSerializer(address)
                 return Response(
                     {
-                        "code": AccountErrorCode.REQUIRED,
-                        "detail": "Address url is required",
+                        "detail": "Update address successfully",
+                        "data": response.data,
                     },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_200_OK,
                 )
-            address = Address()
-            address.set_address_from_url(position_url)
-            current_address = account.address
-
-            current_address.address = address.address
-            current_address.province = address.province
-            current_address.district = address.district
-            current_address.ward = address.ward
-            current_address.hamlet = address.hamlet
-            current_address.lat = float(
-                address.lat,
-            )
-            current_address.lng = float(
-                address.lng,
-            )
-            current_address.position_url = address.position_url
-            current_address.save()
-
-            serializer = AddressSerializer(current_address)
             return Response(
                 {
-                    "detail": "Update address successfully",
-                    "data": serializer.data,
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "detail": "Register salon failed",
+                    "messages": serializer.errors,
                 },
-                status=status.HTTP_200_OK,
+                status=status.HTTP_400_BAD_REQUEST,
             )
-
         except Exception as e:
             return Response(
                 {
@@ -253,5 +254,4 @@ class AddressUpdate(APIView):
                     "messages": e.args,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
-                exception=e,
             )

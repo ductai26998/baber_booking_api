@@ -1,5 +1,12 @@
 SECRET_KEY=7I1b2PTmftnzw81cefp8mXd+m2Y6WNSNvqOCUClOmnw=
 
+# cloudary
+CLOUDINARY_NAME=ddqzgiilu
+CLOUDINARY_API_KEY=226199235821481
+CLOUDINARY_API_SECRET=9gil7DBVuwUxdbWrFh-82zNweNM
+CLOUDINARY_GALLERY_FOLDER=baber_booking/gallery/
+CLOUDINARY_AVATAR_USER_FOLDER=baber_booking/avatar/
+
 # database
 MYSQL_DATABASE=baber_booking
 MYSQL_USER=root
@@ -9,4 +16,7 @@ MYSQL_PORT=3309
 MEDIA_FOLDER=media
 
 #email
-EMAIL_HOST="ductai26998+9@gmail.com"
+EMAIL_HOST=smtp.gmail.com
+EMAIL_HOST_USER=baberbooking5one@gmail.com
+EMAIL_HOST_PASSWORD=ductai2207
+EMAIL_PORT = 587

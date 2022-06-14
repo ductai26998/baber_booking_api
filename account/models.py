@@ -37,6 +37,12 @@ class Address(TimeStampedModel):
         help_text="Url của vị trí trên google map",
     )
 
+    def save(self, *args, **kwargs):
+        self.address = (
+            self.hamlet + ", " + self.ward + ", " + self.district + ", " + self.province
+        )
+        return super().save(*args, **kwargs)
+
 
 class UserQueryset(models.QuerySet):
     def filter(self: models.QuerySet, *args: Any, **kwargs: Any) -> models.QuerySet:
@@ -71,7 +77,7 @@ class BaseUser(AbstractUser, TimeStampedModel):
     email = models.EmailField(_("email address"), unique=True)
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)
-    avatar = models.CharField(max_length=256, null=True, blank=True)
+    avatar = models.URLField(max_length=512, null=True, blank=True)
     phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     total_completed_booking = models.PositiveIntegerField(default=0)
