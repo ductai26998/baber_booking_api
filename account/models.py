@@ -37,6 +37,12 @@ class Address(TimeStampedModel):
         help_text="Url của vị trí trên google map",
     )
 
+    def save(self, *args, **kwargs):
+        self.address = (
+            self.hamlet + ", " + self.ward + ", " + self.district + ", " + self.province
+        )
+        return super().save(*args, **kwargs)
+
 
 class UserQueryset(models.QuerySet):
     def filter(self: models.QuerySet, *args: Any, **kwargs: Any) -> models.QuerySet:

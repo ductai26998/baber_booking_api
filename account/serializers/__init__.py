@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from .address import AddressSerializer
+from .address import AddressSerializer, AddressSerializerInput
+from .admin import AdminSerializer
 from .salon import (
     SalonRegisterInputSerializer,
     SalonRegisterSerializer,
     SalonSerializer,
 )
 from .user import UserRegisterInputSerializer, UserRegisterSerializer, UserSerializer
-from .admin import AdminSerializer
 
 
 class VerifyAccountSerializer(serializers.Serializer):
