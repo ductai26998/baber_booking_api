@@ -152,7 +152,7 @@ class BookingViewSet(BaseViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if booking.status != BookingStatus.NEW:
+        if booking.status not in [BookingStatus.NEW, BookingStatus.CONFIRMED]:
             return Response(
                 {
                     "code": BookingErrorCode.INVALID,
