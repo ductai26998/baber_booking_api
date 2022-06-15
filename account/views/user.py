@@ -50,9 +50,10 @@ class UserViewSet(BaseViewSet):
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         avatar = request.FILES.get("avatar")
-        avatar_folder_path = settings.CLOUDINARY_AVATAR_USER_FOLDER + str(pk) + "/"
-        url = CloudinaryService.upload_image(avatar, avatar_folder_path)
-        request.data["avatar"] = url
+        if avatar:
+            avatar_folder_path = settings.CLOUDINARY_AVATAR_USER_FOLDER + str(pk) + "/"
+            url = CloudinaryService.upload_image(avatar, avatar_folder_path)
+            request.data["avatar"] = url
         return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
