@@ -53,7 +53,6 @@ class UserViewSet(BaseViewSet):
         avatar_folder_path = settings.CLOUDINARY_AVATAR_USER_FOLDER + str(pk) + "/"
         url = CloudinaryService.upload_image(avatar, avatar_folder_path)
         request.data["avatar"] = url
-        print(request.data["avatar"])
         return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
