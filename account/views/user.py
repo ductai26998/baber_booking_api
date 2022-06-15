@@ -1,6 +1,8 @@
 from account.serializers.user import UserUpdateSerializer
+from base.services.cloudinary import CloudinaryService
 from base.views import BaseAPIView, BaseViewSet
 from booking.serializers import BookingSerializer
+from django.conf import settings
 from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
@@ -47,6 +49,11 @@ class UserViewSet(BaseViewSet):
                 "detail": "Permission denied",
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        avatar = request.FILES.get("avatar")
+        avatar_folder_path = settings.CLOUDINARY_AVATAR_USER_FOLDER + str(pk) + "/"
+        url = CloudinaryService.upload_image(avatar, avatar_folder_path)
+        request.data["avatar"] = url
+        print(request.data["avatar"])
         return super().partial_update(request, pk)
 
     def destroy(self, request, pk=None):
