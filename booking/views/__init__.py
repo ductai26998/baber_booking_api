@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from .. import BookingErrorCode, BookingStatus, models
 from ..serializers import BookingCreateInputSerializer, BookingSerializer
+from ..tasks import notifications as nf
 
 
 class BookingViewSet(BaseViewSet):
@@ -70,6 +71,7 @@ class BookingViewSet(BaseViewSet):
                     )
                 )
             models.BookingService.objects.bulk_create(booking_services)
+            nf.send_notify_to_user_about_booking_placed(booking)
             response = BookingSerializer(booking)
             return Response(
                 {
