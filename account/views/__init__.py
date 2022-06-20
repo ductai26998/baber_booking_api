@@ -1,3 +1,4 @@
+from account.services.firebase import clean_up_user_fcm_tokens
 from base.views import BaseAPIView
 from django.contrib.auth.hashers import check_password
 from django.db import transaction
@@ -9,10 +10,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .. import AccountErrorCode, models
 from ..serializers import (
+    AdminSerializer,
     SalonSerializer,
     UserSerializer,
     VerifyAccountSerializer,
-    AdminSerializer,
 )
 
 
@@ -140,4 +141,48 @@ class LoginWithEmailOrUsername(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 exception=e,
+            )
+
+
+class AccountStoreFCMToken(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            current_user = request.user
+            fcm_tokens = current_user.fcm_tokens
+            fcm_token = request.data.get("fcm_token")
+            if not fcm_token:
+                return Response(
+                    {
+                        "code": AccountErrorCode.REQUIRED,
+                        "detail": "fcm_token is not blank",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if fcm_token.strip() != "" and fcm_token not in fcm_tokens:
+                current_user.store_fcm_token(fcm_token)
+            if not clean_up_user_fcm_tokens(current_user):
+                return Response(
+                    {
+                        "code": AccountErrorCode.INVALID,
+                        "detail": "fcm_token invalid",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            return Response(
+                {
+                    "detail": "Add fcm_token successfully",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "code": AccountErrorCode.PROCESSING_ERROR,
+                    "detail": "Can not add fcm_token",
+                    "messages": e.args,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )

@@ -1,6 +1,6 @@
 from typing import Any
 
-from base.models import TimeStampedModel
+from base.models import ModelWithMetadata, TimeStampedModel
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
@@ -60,7 +60,7 @@ class UserManager(BaseUserManager):
     objects = UserQueryset.as_manager()
 
 
-class BaseUser(AbstractUser, TimeStampedModel):
+class BaseUser(AbstractUser, TimeStampedModel, ModelWithMetadata):
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
@@ -90,6 +90,16 @@ class BaseUser(AbstractUser, TimeStampedModel):
 
     class Meta:
         ordering = ("date_joined",)
+
+    @property
+    def fcm_tokens(self):
+        return self.get_value_from_private_metadata("fcm_tokens", [])
+
+    def store_fcm_token(self, fcm_token):
+        fcm_tokens = self.fcm_tokens
+        fcm_tokens.insert(0, fcm_token)
+        self.store_value_in_private_metadata({"fcm_tokens": fcm_tokens})
+        self.save(update_fields=("private_metadata",))
 
 
 class User(BaseUser):

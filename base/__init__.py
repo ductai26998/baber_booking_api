@@ -9,3 +9,11 @@ class CoreErrorCode:
     UNIQUE = "unique"
     VERIFY_FAIL = "verify_fail"
     PERMISSION_DENIED = "permission_denied"
+
+
+class NotificationVerbs:
+    BOOKING_PLACED = "booking_placed"
+    BOOKING_CONFIRMED = "booking_confirmed"
+    BOOKING_CANCELED = "booking_canceled"
+    BOOKING_REQUESTED_TO_COMPLETE = "booking_requested_to_complete"
+    BOOKING_COMPLETED = "booking_completed"
