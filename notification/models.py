@@ -1,8 +1,7 @@
-from account.models import User
+from account.models import BaseUser
 from base import NotificationVerbs
 from base.models import TimeStampedModel
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import JSONField, QuerySet
 
@@ -67,12 +66,7 @@ class ConcatNotificationQueryset(QuerySet):
         if user:
             qs.filter(recipient=user)
 
-        soft_delete = getattr(settings, "NOTIFY_SOFT_DELETE", True)
-
-        if soft_delete:
-            qs.update(deleted=True)
-        else:
-            qs.delete()
+        qs.update(deleted=True)
 
     def active_all(self, user=None):
         """
@@ -95,7 +89,10 @@ class ConcatNotificationQueryset(QuerySet):
 
 class ConcatNotification(TimeStampedModel):
     recipient = models.ForeignKey(
-        User, blank=False, related_name="concat_notifications", on_delete=models.CASCADE
+        BaseUser,
+        blank=False,
+        related_name="concat_notifications",
+        on_delete=models.CASCADE,
     )
     unread = models.BooleanField(default=True, blank=False, db_index=True)
     verb = models.CharField(choices=NotificationVerbs.choices, max_length=255)
