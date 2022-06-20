@@ -43,7 +43,6 @@ def send_notify_multiple_recipient(
     )
     success_ids = []
     failure_count = 0
-    tracing_data_update = {"message_title": message_title, "message_body": message_body}
     for recipient in recipients:
         registration_tokens = recipient.fcm_tokens
 
@@ -80,7 +79,6 @@ def send_notify_multiple_recipient(
 
                 failure_count += batch_response.failure_count
             except Exception as e:
-                tracing_data_update["responses"] = [{"exception": str(e)}]
                 batch_response = None
                 print(">>>>>> Error send push notification: ", e)
     return (success_ids, failure_count)
