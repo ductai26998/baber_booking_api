@@ -130,6 +130,7 @@ class BookingViewSet(BaseViewSet):
         booking.status = BookingStatus.CONFIRMED
         booking.updated_at = timezone.now()
         booking.save(update_fields=["status", "updated_at"])
+        nf.send_notify_to_user_about_booking_confirmed(booking)
         response = BookingSerializer(booking)
         return Response(
             {
@@ -166,6 +167,10 @@ class BookingViewSet(BaseViewSet):
         booking.status = BookingStatus.CANCELED
         booking.updated_at = timezone.now()
         booking.save(update_fields=["status", "updated_at"])
+        if request.user.id == booking.salon_id:
+            nf.send_notify_to_salon_about_booking_canceled_by_salon(booking)
+        elif request.user.id == booking.user_id:
+            nf.send_notify_to_salon_about_booking_canceled_by_user(booking)
         response = BookingSerializer(booking)
         return Response(
             {
@@ -204,6 +209,7 @@ class BookingViewSet(BaseViewSet):
         booking.status = BookingStatus.REQUEST_TO_COMPLETE
         booking.updated_at = timezone.now()
         booking.save(update_fields=["status", "updated_at"])
+        nf.send_notify_to_salon_about_booking_requested_to_complete(booking)
         response = BookingSerializer(booking)
         return Response(
             {
@@ -242,6 +248,7 @@ class BookingViewSet(BaseViewSet):
         booking.status = BookingStatus.COMPLETED
         booking.updated_at = timezone.now()
         booking.save(update_fields=["status", "updated_at"])
+        nf.send_notify_to_salon_about_booking_completed(booking)
         response = BookingSerializer(booking)
         return Response(
             {
