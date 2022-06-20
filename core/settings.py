@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "account",
     "booking",
     "gallery",
+    "notification",
     "service",
 ]
 
@@ -152,6 +153,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
+STR_TIMEZONE = "Asia/Ho_Chi_Minh"
 
 USE_I18N = True
 

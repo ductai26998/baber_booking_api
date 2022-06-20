@@ -33,6 +33,7 @@ urlpatterns = [
     url("", include("account.urls")),
     url("", include("service.urls")),
     url("", include("booking.urls")),
+    url("", include("notification.urls")),
     url("verifyOTP/", VerifyOTP.as_view(), name="verify_user"),
     url("login/", LoginWithEmailOrUsername.as_view(), name="login"),
     # apis for salon

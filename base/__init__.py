@@ -1,3 +1,6 @@
+from django.db import models
+
+
 class CoreErrorCode:
     INVALID = "invalid"
     NOT_FOUND = "not_found"
@@ -11,7 +14,7 @@ class CoreErrorCode:
     PERMISSION_DENIED = "permission_denied"
 
 
-class NotificationVerbs:
+class NotificationVerbs(models.TextChoices):
     BOOKING_PLACED = "booking_placed"
     BOOKING_CONFIRMED = "booking_confirmed"
     BOOKING_CANCELED = "booking_canceled"
