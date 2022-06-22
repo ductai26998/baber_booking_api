@@ -39,6 +39,8 @@ class ModelWithMetadata(models.Model):
         abstract = True
 
     def get_value_from_private_metadata(self, key: str, default: Any = None) -> Any:
+        if not self.private_metadata:
+            return default
         return self.private_metadata.get(key, default)
 
     def store_value_in_private_metadata(self, items: dict):
@@ -54,6 +56,8 @@ class ModelWithMetadata(models.Model):
             del self.private_metadata[key]
 
     def get_value_from_metadata(self, key: str, default: Any = None) -> Any:
+        if not self.metadata:
+            return default
         return self.metadata.get(key, default)
 
     def store_value_in_metadata(self, items: dict):
