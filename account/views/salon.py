@@ -4,6 +4,7 @@ from base.views import BaseViewSet
 from booking.serializers import BookingSerializer
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from gallery import models as gallery_models
 from gallery.serializers import GalleryPhotoSerializer, GallerySerializer
 from rest_framework import status
@@ -41,8 +42,9 @@ class SalonViewSet(BaseViewSet):
         Returns a list of all the group names that the given
         user belongs to.
         """
-        user = self.get_object()
-        services = user.services.all()
+        salon = self.get_object()
+        search_query = request.query_params.get("q", "")
+        services = salon.services.filter(service__name__icontains=search_query)
         data = [ServiceSalonSerializer(service).data for service in services]
         response_dict = {
             "detail": None,
@@ -82,7 +84,15 @@ class SalonViewSet(BaseViewSet):
     def list(self, request):
         search_query = request.query_params.get("q", "")
         sort_query = request.query_params.get("sort", "")
-        queryset = models.Salon.objects.filter(salon_name__icontains=search_query)
+        query = (
+            Q(salon_name__icontains=search_query)
+            | Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(phone_number__icontains=search_query)
+            | Q(username__icontains=search_query)
+        )
+        queryset = models.Salon.objects.filter(query)
 
         if sort_query:
             try:

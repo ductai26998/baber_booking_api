@@ -25,6 +25,11 @@ class ServiceViewSet(BaseViewSet):
         "create": ServiceInputSerializer,
     }
 
+    def list(self, request, *args, **kwargs):
+        search_query = request.query_params.get("q", "")
+        self.queryset = models.Service.objects.filter(name__icontains=search_query)
+        return super().list(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         try:
             account = request.user
