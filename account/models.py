@@ -3,6 +3,7 @@ from typing import Any
 from base.models import ModelWithMetadata, TimeStampedModel
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -120,3 +121,13 @@ class Salon(BaseUser):
 
     class Meta:
         ordering = ("date_joined",)
+
+
+class SalonRating(TimeStampedModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ratings")
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="ratings")
+    stars = models.IntegerField(validators=[MaxValueValidator(5), MinValueValidator(1)])
+    content = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ("created_at",)
