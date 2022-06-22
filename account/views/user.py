@@ -4,6 +4,7 @@ from base.views import BaseAPIView, BaseViewSet
 from booking.serializers import BookingSerializer
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -34,6 +35,18 @@ class UserViewSet(BaseViewSet):
 
     queryset = models.User.objects.filter()
     serializer_class = UserSerializer
+
+    def list(self, request, *args, **kwargs):
+        search_query = request.query_params.get("q", "")
+        query = (
+            Q(first_name__icontains=search_query)
+            | Q(last_name__icontains=search_query)
+            | Q(email__icontains=search_query)
+            | Q(phone_number__icontains=search_query)
+            | Q(username__icontains=search_query)
+        )
+        self.queryset = models.User.objects.filter(query)
+        return super().list(request, *args, **kwargs)
 
     def create(self, request):
         response = {
