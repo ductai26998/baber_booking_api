@@ -1,6 +1,7 @@
 from functools import reduce
 
 from account import models as account_models
+from account.serializers.salon import SalonReviewSerializer
 from base.views import BaseViewSet
 from django.db import transaction
 from django.utils import timezone
@@ -10,7 +11,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .. import BookingErrorCode, BookingStatus, models
-from ..serializers import BookingCreateInputSerializer, BookingSerializer
+from ..serializers import (
+    BookingCreateInputSerializer,
+    BookingReviewInputSerializer,
+    BookingSerializer,
+)
 from ..tasks import notifications as nf
 
 
@@ -256,4 +261,76 @@ class BookingViewSet(BaseViewSet):
                 "data": response.data,
             },
             status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def review(self, request, *args, **kwargs):
+        """
+        User add review about the salon
+        """
+        booking = self.get_object()
+        salon = booking.salon
+        requester = request.user
+        if requester.is_anonymous:
+            return Response(
+                {
+                    "code": BookingErrorCode.PERMISSION_DENIED,
+                    "detail": "Anonymous user can not review salon",
+                    "messages": "Anonymous user can not review salon",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if requester.id == salon.id:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID_ACTION,
+                    "detail": "You can not review yourself",
+                    "messages": "You can not review yourself",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        valid_statuses = [BookingStatus.COMPLETED, BookingStatus.REQUEST_TO_COMPLETE]
+        if booking.status not in valid_statuses:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID_ACTION,
+                    "detail": "Booking status must be: %s" % valid_statuses,
+                    "messages": "Booking status must be: %s" % valid_statuses,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if booking.rating:
+            return Response(
+                {
+                    "code": BookingErrorCode.INVALID_ACTION,
+                    "detail": "This booking was reviewed before",
+                    "messages": "This booking was reviewed before",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        data = request.data
+        serializer = BookingReviewInputSerializer(data=data)
+        if serializer.is_valid():
+            booking.rating = data["rating"]
+            booking.review = data.get("review")
+            update_fields = ["rating", "review"]
+            if booking.status == BookingStatus.REQUEST_TO_COMPLETE:
+                booking.status = BookingStatus.COMPLETED
+                update_fields.append("status")
+            booking.save(update_fields=update_fields)
+            response = SalonReviewSerializer(booking)
+            return Response(
+                {
+                    "data": response.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {
+                "code": BookingErrorCode.PROCESSING_ERROR,
+                "detail": "Can not add review",
+                "messages": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
         )

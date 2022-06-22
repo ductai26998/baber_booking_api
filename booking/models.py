@@ -1,6 +1,7 @@
 from account.models import Salon, User
 from base.models import MoneyField, TimeStampedModel
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from service.models import Service
@@ -25,6 +26,11 @@ class Booking(TimeStampedModel):
         default=settings.DEFAULT_CURRENCY,
     )
     total_net = MoneyField(amount_field="total_net_amount", currency_field="currency")
+    rating = models.IntegerField(
+        blank=True, null=True,
+        validators=[MaxValueValidator(5), MinValueValidator(1)]
+    )
+    review = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ("-created_at",)

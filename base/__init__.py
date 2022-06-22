@@ -3,6 +3,7 @@ from django.db import models
 
 class CoreErrorCode:
     INVALID = "invalid"
+    INVALID_ACTION = "invalid_action"
     NOT_FOUND = "not_found"
     NOT_SUPPORT = "not_support"
     PROCESSING_ERROR = "processing_error"

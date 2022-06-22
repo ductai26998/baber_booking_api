@@ -36,6 +36,7 @@ class UserBaseViewSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
+            "avatar",
         ]
         depth = 1
 

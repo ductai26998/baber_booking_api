@@ -1,8 +1,11 @@
 from account import models
 from account.email import send_otp_to_email
-from account.serializers.address import AddressSerializerInput
+from booking import models as booking_models
 from rest_framework import serializers
 from service.serializers import ServiceSalonSerializer
+
+from .address import AddressSerializerInput
+from .user import UserBaseViewSerializer
 
 
 class SalonSerializer(serializers.ModelSerializer):
@@ -106,3 +109,15 @@ class SalonRegisterSerializer(serializers.ModelSerializer):
             "is_superuser",
         ]
         depth = 2
+
+
+class SalonReviewSerializer(serializers.ModelSerializer):
+    user = UserBaseViewSerializer(read_only=True)
+
+    class Meta:
+        model = booking_models.Booking
+        fields = [
+            "rating",
+            "review",
+            "user",
+        ]

@@ -35,6 +35,8 @@ class BookingSerializer(serializers.ModelSerializer):
             "status",
             "total_net",
             "booking_services",
+            "rating",
+            "review",
         ]
         depth = 1
 
@@ -42,3 +44,8 @@ class BookingSerializer(serializers.ModelSerializer):
 class BookingCreateInputSerializer(serializers.Serializer):
     salon_id = serializers.CharField()
     service_ids = serializers.ListField(child=serializers.CharField())
+
+
+class BookingReviewInputSerializer(serializers.Serializer):
+    rating = serializers.IntegerField(min_value=1, max_value=5)
+    review = serializers.CharField(required=False, allow_blank=True)
