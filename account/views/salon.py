@@ -1,3 +1,4 @@
+from account.serializers.salon import SalonReviewSerializer
 from base.services.cloudinary import CloudinaryService
 from base.views import BaseViewSet
 from booking.serializers import BookingSerializer
@@ -214,6 +215,21 @@ class SalonViewSet(BaseViewSet):
         return Response(
             {
                 "data": response_data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["get"])
+    def reviews(self, request, *args, **kwargs):
+        """
+        Get all reviews of salon
+        """
+        salon = self.get_object()
+        qs = salon.bookings.filter(rating__isnull=False)
+        response = SalonReviewSerializer(qs, many=True)
+        return Response(
+            {
+                "data": response.data,
             },
             status=status.HTTP_200_OK,
         )
