@@ -312,12 +312,21 @@ class BookingViewSet(BaseViewSet):
         data = request.data
         serializer = BookingReviewInputSerializer(data=data)
         if serializer.is_valid():
-            booking.rating = data["rating"]
+            rating = data["rating"]
+            booking.rating = rating
             booking.review = data.get("review")
             update_fields = ["rating", "review"]
             if booking.status == BookingStatus.REQUEST_TO_COMPLETE:
                 booking.status = BookingStatus.COMPLETED
                 update_fields.append("status")
+                nf.send_notify_to_salon_about_booking_completed(booking)
+            total_reviews = salon.total_reviews
+            vote_rate = salon.vote_rate
+            if vote_rate is None:
+                vote_rate = 0
+            salon.vote_rate = round((vote_rate * total_reviews + rating) / (total_reviews + 1), 3)
+            salon.total_reviews = total_reviews + 1
+            salon.save(update_fields=["vote_rate", "total_reviews"])
             booking.save(update_fields=update_fields)
             response = SalonReviewSerializer(booking)
             return Response(

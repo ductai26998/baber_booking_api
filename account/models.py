@@ -114,6 +114,7 @@ class User(BaseUser):
 class Salon(BaseUser):
     salon_name = models.CharField(max_length=255, unique=True, null=True, blank=True)
     background_image = models.CharField(max_length=256, null=True, blank=True)
+    total_reviews = models.IntegerField(default=0)
     vote_rate = models.FloatField(blank=True, null=True)
     is_closed = models.BooleanField(default=False)
     description = models.CharField(max_length=512, null=True, blank=True)
