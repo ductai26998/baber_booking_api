@@ -13,15 +13,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from account.views import RegisterUserAPI, VerifyOTPAPI
+# from account.views import (SalonRegister, LoginWithEmailOrUsername,
+#                            UserRegister, VerifyOTP)
+
+from account.views import LoginWithEmailOrUsername, VerifyOTP
+from account.views import salon as salon_views
+from account.views import user as user_views
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.urls import path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
-    url(r"api/account/", include('account.urls')),
-    url('register-user', RegisterUserAPI.as_view(), name='register-user'),
-    url('verify-user', VerifyOTPAPI.as_view(), name='verify-user'),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("admin/", admin.site.urls),
+    path("api-auth/", include("rest_framework.urls")),
+    url("", include("account.urls")),
+    url("", include("service.urls")),
+    url("", include("booking.urls")),
+    url("", include("notification.urls")),
+    url("verifyOTP/", VerifyOTP.as_view(), name="verify_user"),
+    url("login/", LoginWithEmailOrUsername.as_view(), name="login"),
+    # apis for salon
+    url("registerSalon/", salon_views.SalonRegister.as_view(), name="register_salon"),
+    # apis for user
+    url("registerUser/", user_views.UserRegister.as_view(), name="register_user"),
 ]
